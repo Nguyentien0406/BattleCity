@@ -93,7 +93,7 @@ void EnemyTank::shoot() {
 
     int bulletX = rect.x;
     int bulletY = rect.y;
-    int offset = 5;
+    int offset = 0;
 
     switch (direction) {
         case 0:

@@ -15,7 +15,7 @@ public:
 
     void render(SDL_Renderer* renderer);
     void move(int dx, int dy, const std::vector<class Wall>& walls, const std::vector<class EnemyTank>& enemies);
-    void shoot();
+    void shoot(Game &game);
 
     std::vector<Bullet>& getBullets();
     const SDL_Rect getRect() const;

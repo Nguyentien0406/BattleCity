@@ -6,7 +6,7 @@
 	"Game.h"
 	<SDL_mixer.h>
 
-1742490473 source:c:\sdl2\battlecity\bullet.cpp
+1742576102 source:c:\sdl2\battlecity\bullet.cpp
 	"Bullet.h"
 	"Game.h"
 
@@ -23,16 +23,16 @@
 	<SDL.h>
 	<vector>
 
-1742493869 source:c:\sdl2\battlecity\playertank.cpp
+1742576463 source:c:\sdl2\battlecity\playertank.cpp
 	"Game.h"
 	"PlayerTank.h"
 
-1742490031 c:\sdl2\battlecity\enemytank.h
+1742574060 c:\sdl2\battlecity\enemytank.h
 	"Wall.h"
 	<SDL.h>
 	<vector>
 
-1742490473 c:\sdl2\battlecity\playertank.h
+1742572607 c:\sdl2\battlecity\playertank.h
 	"Wall.h"
 	<SDL.h>
 	<vector>
@@ -41,12 +41,13 @@
 	"Wall.h"
 	"Game.h"
 
-1742490473 source:c:\sdl2\battlecity\enemytank.cpp
+1742576503 source:c:\sdl2\battlecity\enemytank.cpp
 	"EnemyTank.h"
 	"Game.h"
 
-1742452855 c:\sdl2\battlecity\game.h
+1742573828 c:\sdl2\battlecity\game.h
 	<SDL.h>
+	<SDL_mixer.h>
 	<vector>
 	<iostream>
 	<algorithm>
@@ -57,6 +58,8 @@
 	"PlayerTank.h"
 	"EnemyTank.h"
 
-1742489223 source:c:\sdl2\battlecity\game.cpp
+1742576577 source:c:\sdl2\battlecity\game.cpp
 	"Game.h"
+	<SDL.h>
+	<SDL_mixer.h>
 

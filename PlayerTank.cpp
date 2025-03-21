@@ -52,10 +52,10 @@ void PlayerTank::move(int dx, int dy, const vector<Wall>& walls, const vector<En
     if (rect.y > SCREEN_HEIGHT - TILE_SIZE - BORDER_THICKNESS) rect.y = SCREEN_HEIGHT - TILE_SIZE - BORDER_THICKNESS;
 }
 
-void PlayerTank::shoot() {
+void PlayerTank::shoot(Game &game) {
     int bulletX = rect.x;
     int bulletY = rect.y;
-    int offset = 5;
+    int offset = 0;
 
     switch (direction) {
         case 0:
@@ -77,6 +77,7 @@ void PlayerTank::shoot() {
     }
 
     bullets.emplace_back(bulletX, bulletY, direction, true);
+    game.playShootSound();
 }
 const SDL_Rect PlayerTank::getRect() const {
     return rect;

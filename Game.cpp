@@ -1,22 +1,22 @@
 #include "Game.h"
+#include <SDL.h>
+#include <SDL_mixer.h>
 
 using namespace std;
 
-Game::Game() : window(nullptr), renderer(nullptr), running(true), player(40, 40) {
+Game::Game() : window(nullptr), renderer(nullptr), running(true), gameOver(false), backgroundMusic(nullptr), shootSound(nullptr), explosionSound(nullptr), player(40, 40) {
     srand(time(nullptr));
     generateBorders();
     generateMap();
     generateEnemies(4);
 }
 Game::~Game() {
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
+    close();
 }
 
 bool Game::init() {
-    if(SDL_Init(SDL_INIT_VIDEO) < 0) {
-        cerr << "SDL_Init Error: " << SDL_GetError() << endl;
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
+        cerr << "SDL could not initialize! SDL Error: " << SDL_GetError() << endl;
         return false;
     }
 
@@ -29,6 +29,33 @@ bool Game::init() {
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
         cerr << "SDL_CreateRenderer Error: " << SDL_GetError() << endl;
+        return false;
+    }
+
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        cerr << "SDL_mixer could not initialize! SDL_mixer Error: " << Mix_GetError() << endl;
+        return false;
+    }
+
+    backgroundMusic = Mix_LoadMUS("Music\\Mesmerizing Galaxy Loop.mp3");
+    if (!backgroundMusic) {
+        cerr << "Failed to load background music! SDL_mixer Error: " << Mix_GetError() << endl;
+        return false;
+    } else {
+        Mix_VolumeMusic(32);
+        Mix_PlayMusic(backgroundMusic, -1);
+    }
+    Mix_PlayMusic(backgroundMusic, -1);
+
+    shootSound = Mix_LoadWAV("Music\\shoot.wav");
+    if (!shootSound) {
+        cerr << "Failed to load shooting sound! SDL_mixer Error: " << Mix_GetError() << endl;
+        return false;
+    }
+
+    explosionSound = Mix_LoadWAV("Music\\explosion.wav");
+    if (!explosionSound) {
+        cerr << "Failed to load explosion sound! SDL_mixer Error: " << Mix_GetError() << endl;
         return false;
     }
 
@@ -52,7 +79,7 @@ void Game::render() {
     }
 
     if (enemyTanks.empty()) {
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Màu trắng
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_Rect winMessage = {SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2 - 25, 200, 50};
         SDL_RenderFillRect(renderer, &winMessage);
     }
@@ -68,13 +95,40 @@ void Game::run() {
         render();
         if (enemyTanks.empty()) {
             cout << "🎉 You Win! All enemies defeated!" << endl;
+            SDL_Delay(10);
             running = false;
         }
         if (gameOver) {
             cout << "💀 Game Over! You were destroyed!" << endl;
+            SDL_Delay(10);
             running = false;
         }
         SDL_Delay(10);
+    }
+}
+
+void Game::close() {
+    Mix_HaltMusic();
+    Mix_FreeMusic(backgroundMusic);
+    Mix_CloseAudio();
+    Mix_FreeChunk(shootSound);
+    Mix_FreeChunk(explosionSound);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+}
+
+void Game::playShootSound() {
+    if (shootSound) {
+        Mix_VolumeChunk(shootSound, 32);
+        Mix_PlayChannel(-1, shootSound, 0);
+    }
+}
+
+void Game::playExplosionSound() {
+    if (explosionSound) {
+        Mix_VolumeChunk(explosionSound, 32);
+        Mix_PlayChannel(-1, explosionSound, 0);
     }
 }
 
@@ -88,7 +142,7 @@ void Game::handleEvents() {
                 case SDLK_DOWN:  player.move(0, 1, walls, enemyTanks); break;
                 case SDLK_LEFT:  player.move(-1, 0, walls, enemyTanks); break;
                 case SDLK_RIGHT: player.move(1, 0, walls, enemyTanks); break;
-                case SDLK_SPACE: player.shoot(); break;
+                case SDLK_SPACE: player.shoot(*this); break;
             }
         }
     }

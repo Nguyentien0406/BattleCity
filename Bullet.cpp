@@ -45,6 +45,7 @@ void Bullet::update(const vector<Wall>& walls, PlayerTank& player, vector<EnemyT
             if (isFromPlayer) {
                 it->takeDamage();
                 if (it->isDestroyed()) {
+                    game.playExplosionSound();
                     enemies.erase(it);
                 }
             }

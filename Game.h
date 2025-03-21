@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include <SDL.h>
+#include <SDL_mixer.h>
 #include <vector>
 #include <iostream>
 #include <algorithm>
@@ -27,12 +28,18 @@ public:
     void render();
     void run();
     void handleEvents();
+    void close();
+    void playShootSound();
+    void playExplosionSound();
 
 private:
     SDL_Window* window;
     SDL_Renderer* renderer;
     bool running;
     bool gameOver;
+    Mix_Music* backgroundMusic;
+    Mix_Chunk* shootSound;
+    Mix_Chunk* explosionSound;
     PlayerTank player;
     std::vector<SDL_Rect> borders;
     std::vector<std::vector<TileType>> map;
