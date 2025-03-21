@@ -1,0 +1,62 @@
+# depslib dependency file v1.0
+1740160014 source:c:\sdl2\okkk\main.cpp
+	<iostream>
+
+1742494036 source:c:\sdl2\battlecity\main.cpp
+	"Game.h"
+	<SDL_mixer.h>
+
+1742490473 source:c:\sdl2\battlecity\bullet.cpp
+	"Bullet.h"
+	"Game.h"
+
+1742471458 c:\sdl2\battlecity\bullet.h
+	"Game.h"
+	"Wall.h"
+	"PlayerTank.h"
+	"EnemyTank.h"
+	<SDL.h>
+	<vector>
+
+1742454304 c:\sdl2\battlecity\wall.h
+	"Game.h"
+	<SDL.h>
+	<vector>
+
+1742493869 source:c:\sdl2\battlecity\playertank.cpp
+	"Game.h"
+	"PlayerTank.h"
+
+1742490031 c:\sdl2\battlecity\enemytank.h
+	"Wall.h"
+	<SDL.h>
+	<vector>
+
+1742490473 c:\sdl2\battlecity\playertank.h
+	"Wall.h"
+	<SDL.h>
+	<vector>
+
+1742452855 source:c:\sdl2\battlecity\wall.cpp
+	"Wall.h"
+	"Game.h"
+
+1742490473 source:c:\sdl2\battlecity\enemytank.cpp
+	"EnemyTank.h"
+	"Game.h"
+
+1742452855 c:\sdl2\battlecity\game.h
+	<SDL.h>
+	<vector>
+	<iostream>
+	<algorithm>
+	<cstdlib>
+	<ctime>
+	"Wall.h"
+	"Bullet.h"
+	"PlayerTank.h"
+	"EnemyTank.h"
+
+1742489223 source:c:\sdl2\battlecity\game.cpp
+	"Game.h"
+
