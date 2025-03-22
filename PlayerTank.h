@@ -3,6 +3,7 @@
 
 #include "Wall.h"
 #include <SDL.h>
+#include <SDL_mixer.h>
 #include <vector>
 class Bullet;
 class EnemyTank;
@@ -13,7 +14,7 @@ public:
     PlayerTank(int x, int y);
     ~PlayerTank() {}
 
-    void render(SDL_Renderer* renderer);
+    void render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) const;
     void move(int dx, int dy, const std::vector<class Wall>& walls, const std::vector<class EnemyTank>& enemies);
     void shoot(Game &game);
 

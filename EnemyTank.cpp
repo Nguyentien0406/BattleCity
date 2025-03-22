@@ -9,13 +9,23 @@ EnemyTank::EnemyTank(int x, int y) : speed(10), direction(rand() % 4), health(3)
     rect.h = TILE_SIZE;
 }
 
-void EnemyTank::render(SDL_Renderer* renderer) const{
-    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
-    SDL_RenderFillRect(renderer, &rect);
-
-    for (const Bullet& bullet : bullets) {
-        bullet.render(renderer);
+void EnemyTank::render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) const{
+    SDL_Rect srcRect;
+    switch (direction) {
+        case 0:
+            srcRect = {521, 530, 57, 56};
+            break;
+        case 1:
+            srcRect = {778, 526, 57, 55};
+            break;
+        case 2:
+            srcRect = {651, 526, 59, 56};
+            break;
+        case 3:
+            srcRect = {906, 526, 55, 56};
+            break;
     }
+    SDL_RenderCopy(renderer, spriteSheet, &srcRect, &rect);
 }
 
 void EnemyTank::move(const vector<Wall>& walls, const PlayerTank& player, const vector<EnemyTank>& enemies) {
@@ -39,10 +49,10 @@ void EnemyTank::move(const vector<Wall>& walls, const PlayerTank& player, const 
 
     int dx = 0, dy = 0;
     switch (direction) {
-        case 0: dy = -1; break; // Lên
-        case 1: dy = 1; break;  // Xuống
-        case 2: dx = -1; break; // Trái
-        case 3: dx = 1; break;  // Phải
+        case 0: dy = -1; break;
+        case 1: dy = 1; break;
+        case 2: dx = -1; break;
+        case 3: dx = 1; break;
     }
 
     int newX = rect.x + dx * speed;
@@ -72,8 +82,8 @@ void EnemyTank::move(const vector<Wall>& walls, const PlayerTank& player, const 
     }
 }
 
-    if (newX < BORDER_THICKNESS || newX > SCREEN_WIDTH - TILE_SIZE - BORDER_THICKNESS ||
-        newY < BORDER_THICKNESS || newY > SCREEN_HEIGHT - TILE_SIZE - BORDER_THICKNESS) {
+    if (newX < TILE_SIZE || newX > SCREEN_WIDTH - TILE_SIZE - TILE_SIZE ||
+        newY < TILE_SIZE || newY > SCREEN_HEIGHT - TILE_SIZE - TILE_SIZE) {
         direction = rand() % 4;
         moveCooldown = 30;
         return;
@@ -93,7 +103,7 @@ void EnemyTank::shoot() {
 
     int bulletX = rect.x;
     int bulletY = rect.y;
-    int offset = 0;
+    int offset = 10;
 
     switch (direction) {
         case 0:
@@ -118,7 +128,7 @@ void EnemyTank::shoot() {
     shootCooldown = 50 + (rand() % 50);
 }
 
-void EnemyTank::updateBullets(const vector<Wall>& walls, PlayerTank& player, vector<EnemyTank>& enemies, Game &game) {
+void EnemyTank::updateBullets(vector<Wall>& walls, PlayerTank& player, vector<EnemyTank>& enemies, Game &game) {
     for (Bullet& bullet : bullets) {
         bullet.update(walls, player, enemies, game);
     }

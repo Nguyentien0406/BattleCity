@@ -3,6 +3,7 @@
 
 #include "Wall.h"
 #include <SDL.h>
+#include <SDL_mixer.h>
 #include <vector>
 class Bullet;
 class PlayerTank;
@@ -13,10 +14,10 @@ public:
     EnemyTank(int x, int y);
     ~EnemyTank() {}
 
-    void render(SDL_Renderer* renderer) const;
+    void render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) const;
     void move(const std::vector<Wall>& walls, const PlayerTank& player, const std::vector<EnemyTank>& enemies);
     void shoot();
-    void updateBullets(const std::vector<Wall>& walls, PlayerTank& player, std::vector<EnemyTank>& enemies,Game &game);
+    void updateBullets(std::vector<Wall>& walls, PlayerTank& player, std::vector<EnemyTank>& enemies,Game &game);
 
     std::vector<Bullet>& getBullets();
     const SDL_Rect getRect() const;

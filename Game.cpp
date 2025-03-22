@@ -1,14 +1,14 @@
 #include "Game.h"
 #include <SDL.h>
 #include <SDL_mixer.h>
+#include <SDL_image.h>
 
 using namespace std;
 
-Game::Game() : window(nullptr), renderer(nullptr), running(true), gameOver(false), backgroundMusic(nullptr), shootSound(nullptr), explosionSound(nullptr), player(40, 40) {
+Game::Game() : window(nullptr), renderer(nullptr), running(true), gameOver(false), backgroundMusic(nullptr), shootSound(nullptr), explosionSound(nullptr), player(360, 320) {
     srand(time(nullptr));
+    spriteSheet= nullptr;
     generateBorders();
-    generateMap();
-    generateEnemies(4);
 }
 Game::~Game() {
     close();
@@ -59,6 +59,15 @@ bool Game::init() {
         return false;
     }
 
+    spriteSheet = IMG_LoadTexture(renderer, "C:\\SDL2\\BattleCity\\assets.png");
+    if (!spriteSheet) {
+        cerr << "Failed to load textures!" << endl;
+        return false;
+    }
+
+    loadMapFromFile("Map/Map1.txt");
+    generateEnemies(4);
+
     return true;
 }
 
@@ -70,18 +79,41 @@ void Game::render() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    renderWalls();
     renderBorders();
-    player.render(renderer);
 
-    for (const EnemyTank& enemy : enemyTanks) {
-        enemy.render(renderer);
+    for (const Wall& wall : walls) {
+        if (!wall.isCamouflaged()) {
+            wall.render(renderer, spriteSheet);
+        }
     }
 
-    if (enemyTanks.empty()) {
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        SDL_Rect winMessage = {SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2 - 25, 200, 50};
-        SDL_RenderFillRect(renderer, &winMessage);
+    player.render(renderer, spriteSheet);
+
+    for (EnemyTank& enemy : enemyTanks) {
+        enemy.render(renderer, spriteSheet);
+    }
+
+    for (const Bullet& bullet : player.getBullets()) {
+        bullet.render(renderer, spriteSheet);
+    }
+
+    for (EnemyTank& enemy : enemyTanks) {
+        for (const Bullet& bullet : enemy.getBullets()) {
+            bullet.render(renderer, spriteSheet);
+        }
+    }
+
+    for (const Explosion& explosion : explosions) {
+        SDL_Rect srcRect = {1120, 519, 56, 56};
+        SDL_Rect destRect = {explosion.x, explosion.y, TILE_SIZE, TILE_SIZE};
+        SDL_RenderCopy(renderer, spriteSheet, &srcRect, &destRect);
+    }
+    explosions.erase(remove_if(explosions.begin(), explosions.end(),[](const Explosion& e) { return SDL_GetTicks() - e.startTime > 500; }),explosions.end());
+
+    for (const Wall& wall : walls) {
+        if(wall.isCamouflaged()) {
+            wall.render(renderer, spriteSheet);
+        }
     }
 
     SDL_RenderPresent(renderer);
@@ -132,6 +164,10 @@ void Game::playExplosionSound() {
     }
 }
 
+void Game::addExplosion(int x, int y) {
+    explosions.push_back({x, y, SDL_GetTicks()});
+}
+
 void Game::handleEvents() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -150,10 +186,10 @@ void Game::handleEvents() {
 void Game::generateBorders() {
     borders.clear();
 
-    SDL_Rect top_border = { 0, 0, SCREEN_WIDTH, BORDER_THICKNESS };
-    SDL_Rect bottom_border = { 0, SCREEN_HEIGHT - BORDER_THICKNESS, SCREEN_WIDTH, BORDER_THICKNESS };
-    SDL_Rect left_border = { 0, 0, BORDER_THICKNESS, SCREEN_HEIGHT };
-    SDL_Rect right_border = { SCREEN_WIDTH - BORDER_THICKNESS, 0, BORDER_THICKNESS, SCREEN_HEIGHT };
+    SDL_Rect top_border = { 0, 0, SCREEN_WIDTH, TILE_SIZE };
+    SDL_Rect bottom_border = { 0, SCREEN_HEIGHT - TILE_SIZE, SCREEN_WIDTH, TILE_SIZE };
+    SDL_Rect left_border = { 0, 0, TILE_SIZE, SCREEN_HEIGHT };
+    SDL_Rect right_border = { SCREEN_WIDTH - TILE_SIZE, 0, TILE_SIZE, SCREEN_HEIGHT };
 
     borders.push_back(top_border);
     borders.push_back(bottom_border);
@@ -168,38 +204,35 @@ void Game::renderBorders() {
     }
 }
 
-void Game::generateMap() {
-    int mapWidth = SCREEN_WIDTH / TILE_SIZE;
-    int mapHeight = SCREEN_HEIGHT / TILE_SIZE;
-
-    map.resize(mapHeight, vector<TileType>(mapWidth, EMPTY));
-
-    map[5][5] = WALL;
-    map[5][6] = WALL;
-    map[6][5] = WALL;
-    map[10][11] = WALL;
-    map[10][12] = WALL;
-    map[11][12] = WALL;
-    map[10][13] = WALL;
-    map[4][14] = WALL;
-    map[4][15] = WALL;
-    map[3][14] = WALL;
-    map[3][15] = WALL;
-
+void Game::loadMapFromFile(const string& filename) {
+    ifstream file(filename);
+    if (!file) {
+        cerr << "Không thể mở file bản đồ: " << filename << endl;
+        return;
+    }
+    map.clear();
     walls.clear();
-    for (int y = 0; y < mapHeight; ++y) {
-        for (int x = 0; x < mapWidth; ++x) {
-            if (map[y][x] == WALL) {
-                walls.emplace_back(x * TILE_SIZE, y * TILE_SIZE);
+    int y = 0;
+    string line;
+    while (getline(file, line)) {
+        vector<int> row;
+        istringstream iss(line);
+        int x = 0, tile;
+        while (iss >> tile) {
+            row.push_back(tile);
+            if (tile == 1) {
+                walls.emplace_back(x * TILE_SIZE, y * TILE_SIZE, false, false);
+            } else if (tile == 2) {
+                walls.emplace_back(x * TILE_SIZE, y * TILE_SIZE, true, false);
+            } else if (tile == 3) {
+                walls.emplace_back(x * TILE_SIZE, y * TILE_SIZE, false, true);
             }
+            x++;
         }
+        map.push_back(row);
+        y++;
     }
-}
-
-void Game::renderWalls() {
-    for (const Wall& wall : walls) {
-        wall.render(renderer);
-    }
+    file.close();
 }
 
 void Game::updateBullets() {
@@ -229,16 +262,15 @@ void Game::generateEnemies(int numEnemies) {
     for (int i = 0; i < numEnemies; ++i) {
         bool validPosition = false;
         int x, y;
-        int attempts = 0;
-
-        while (!validPosition && attempts < 50) {
-            x = (rand() % ((SCREEN_WIDTH - 2 * BORDER_THICKNESS) / TILE_SIZE)) * TILE_SIZE + BORDER_THICKNESS;
-            y = (rand() % ((SCREEN_HEIGHT - 2 * BORDER_THICKNESS) / TILE_SIZE)) * TILE_SIZE + BORDER_THICKNESS;
+        while (!validPosition) {
+            x = (rand() % ((SCREEN_WIDTH - 2 * TILE_SIZE) / TILE_SIZE)) * TILE_SIZE + TILE_SIZE;
+            y = (rand() % ((SCREEN_HEIGHT - 2 * TILE_SIZE) / TILE_SIZE)) * TILE_SIZE + TILE_SIZE;
             SDL_Rect enemyRect = {x, y, TILE_SIZE, TILE_SIZE};
             validPosition = true;
 
-            for (const Wall& wall : walls) {
-                if (SDL_HasIntersection(&enemyRect, &wall.getRect())) {
+            for (Wall& wall : walls) {
+                SDL_Rect wallRect = wall.getRect();
+                if (SDL_HasIntersection(&enemyRect, &wallRect)) {
                     validPosition = false;
                     break;
                 }
@@ -249,7 +281,7 @@ void Game::generateEnemies(int numEnemies) {
                 validPosition = false;
             }
 
-            for (const EnemyTank& enemy : enemyTanks) {
+            for (EnemyTank& enemy : enemyTanks) {
                 SDL_Rect enemyHitbox = enemy.getRect();
                 if (SDL_HasIntersection(&enemyRect, &enemyHitbox)) {
                     validPosition = false;
@@ -257,16 +289,22 @@ void Game::generateEnemies(int numEnemies) {
                 }
             }
 
-            if (x < BORDER_THICKNESS || x > SCREEN_WIDTH - TILE_SIZE - BORDER_THICKNESS ||
-                y < BORDER_THICKNESS || y > SCREEN_HEIGHT - TILE_SIZE - BORDER_THICKNESS) {
+            if (x < TILE_SIZE || x > SCREEN_WIDTH - TILE_SIZE - TILE_SIZE ||
+                y < TILE_SIZE || y > SCREEN_HEIGHT - TILE_SIZE - TILE_SIZE) {
                 validPosition = false;
             }
-            attempts++;
         }
-
         if (validPosition) {
             enemyTanks.emplace_back(x, y);
         }
     }
 }
 
+
+void Game::removeWall(int x, int y) {
+    walls.erase(remove_if(walls.begin(), walls.end(),
+        [x, y](const Wall& w) {
+            return w.getRect().x == x && w.getRect().y == y;
+        }),
+        walls.end());
+}

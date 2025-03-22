@@ -10,24 +10,50 @@ Bullet::Bullet(int x, int y, int dir, bool fromPlayer) : speed(BULLET_SPEED), di
     rect.h = BULLET_SIZE;
 }
 
-void Bullet::render(SDL_Renderer* renderer) const {
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderFillRect(renderer, &rect);
+void Bullet::render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) const{
+    SDL_Rect srcRect;
+    switch (direction) {
+        case 0:
+            srcRect = {1318, 406, 16, 20};
+            break;
+        case 1:
+            srcRect = {1382, 406, 16, 20};
+            break;
+        case 2:
+            srcRect = {1348, 406, 18, 16};
+            break;
+        case 3:
+            srcRect = {1410, 406, 18, 16};
+            break;
+    }
+    SDL_RenderCopy(renderer, spriteSheet, &srcRect, &rect);
 }
 
-void Bullet::update(const vector<Wall>& walls, PlayerTank& player, vector<EnemyTank>& enemies, Game &game) {
+void Bullet::update(vector<Wall>& walls, PlayerTank& player, vector<EnemyTank>& enemies, Game &game) {
     switch (direction) {
-        case 0: rect.y -= speed; break; // Up
-        case 1: rect.y += speed; break; // Down
-        case 2: rect.x -= speed; break; // Left
-        case 3: rect.x += speed; break; // Right
+        case 0: rect.y -= speed; break;
+        case 1: rect.y += speed; break;
+        case 2: rect.x -= speed; break;
+        case 3: rect.x += speed; break;
     }
 
-    for (const Wall& wall : walls) {
+    for (Wall& wall : walls) {
         if (SDL_HasIntersection(&rect, &wall.getRect())) {
-            collided = true;
-            offScreen = true;
-            return;
+            if (wall.isBreakable()) {
+                wall.takeDamage();
+                if (wall.isDestroyed()) {
+                    game.removeWall(wall.getRect().x, wall.getRect().y);
+                }
+                collided = true;
+                offScreen = true;
+                return;
+            } else if(wall.isCamouflaged()) {
+                continue;
+            } else{
+                collided = true;
+                offScreen = true;
+                return;
+            }
         }
     }
 
@@ -38,20 +64,20 @@ void Bullet::update(const vector<Wall>& walls, PlayerTank& player, vector<EnemyT
         player.takeDamage(game);
         return;
     }
-
-    for (auto it = enemies.begin(); it != enemies.end(); ++it) {
-        SDL_Rect enemyRect = it->getRect();
-        if (SDL_HasIntersection(&rect, &enemyRect)) {
-            if (isFromPlayer) {
+    if (isFromPlayer) {
+        for (auto it = enemies.begin(); it != enemies.end(); ++it) {
+            SDL_Rect enemyRect = it->getRect();
+            if (SDL_HasIntersection(&rect, &enemyRect)) {
                 it->takeDamage();
                 if (it->isDestroyed()) {
+                    game.addExplosion(it->getRect().x, it->getRect().y);
                     game.playExplosionSound();
                     enemies.erase(it);
                 }
-            }
             collided = true;
             offScreen = true;
             return;
+            }
         }
     }
 
