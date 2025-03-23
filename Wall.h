@@ -20,7 +20,7 @@ public:
     const SDL_Rect& getRect() const { return rect; }
     bool isBreakable() const { return breakable; }
     bool isCamouflaged() const { return camouflaged; }
-    void takeDamage();
+    void takeDamage(int direction);
     bool isDestroyed() const;
 
 private:
@@ -28,6 +28,8 @@ private:
     bool breakable;
     bool camouflaged;
     int hitPoints;
+    int damageDirection;
+    bool halfDamaged;
 };
 
 #endif

@@ -1,35 +1,42 @@
 #include "Game.h"
 #include "PlayerTank.h"
+#include <iostream>
 
 using namespace std;
 
-PlayerTank::PlayerTank(int x, int y) : speed(20), direction(0), health(5) {
+PlayerTank::PlayerTank(int x, int y) : speed(5), baseSpeed(5), direction(0), health(5), currentFrame(0), lastFrameTime(SDL_GetTicks()), isMoving(false), boostedMoves(0) {
     rect.x = x;
     rect.y = y;
     rect.w = TILE_SIZE;
     rect.h = TILE_SIZE;
 }
 
-void PlayerTank::render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) const{
+void PlayerTank::render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) {
     SDL_Rect srcRect;
+    Uint32 currentTime = SDL_GetTicks();
+    if (isMoving && currentTime - lastFrameTime > 10) {
+        currentFrame = 1 - currentFrame;
+        lastFrameTime = currentTime;
+    }
     switch (direction) {
         case 0:
-            srcRect = {522, 7, 55, 55};
+            srcRect = currentFrame == 0 ? SDL_Rect{522, 7, 55, 55} : SDL_Rect{586, 7, 55, 55};
             break;
         case 1:
-            srcRect = {778, 3, 56, 55};
+            srcRect = currentFrame == 0 ? SDL_Rect{778, 3, 56, 55} : SDL_Rect{842, 3, 56, 55};
             break;
         case 2:
-            srcRect = {652, 2, 59, 56};
+            srcRect = currentFrame == 0 ? SDL_Rect{652, 2, 59, 56} : SDL_Rect{716, 2, 59, 56};
             break;
         case 3:
-            srcRect = {905, 3, 54, 55};
+            srcRect = currentFrame == 0 ? SDL_Rect{905, 3, 54, 55} : SDL_Rect{970, 3, 54, 55};
             break;
     }
     SDL_RenderCopy(renderer, spriteSheet, &srcRect, &rect);
 }
 
 void PlayerTank::move(int dx, int dy, const vector<Wall>& walls, const vector<EnemyTank>& enemies) {
+    speed = (boostedMoves > 0) ? baseSpeed * 8 : baseSpeed;
     int newX = rect.x + dx * speed;
     int newY = rect.y + dy * speed;
     SDL_Rect newRect = { newX, newY, rect.w, rect.h };
@@ -43,7 +50,6 @@ void PlayerTank::move(int dx, int dy, const vector<Wall>& walls, const vector<En
     for (const EnemyTank& enemy : enemies) {
             SDL_Rect enemyRect = enemy.getRect();
             if (SDL_HasIntersection(&newRect, &enemyRect)) {
-                direction = rand() % 4;
                 return;
             }
     }
@@ -55,6 +61,8 @@ void PlayerTank::move(int dx, int dy, const vector<Wall>& walls, const vector<En
     else if (dx == -1) direction = 2;
     else if (dy == 1) direction = 1;
     else if (dy == -1) direction = 0;
+
+    if (boostedMoves > 0) boostedMoves--;
 
     if (rect.x < TILE_SIZE) rect.x = TILE_SIZE;
     if (rect.x > SCREEN_WIDTH - TILE_SIZE - TILE_SIZE) rect.x = SCREEN_WIDTH - TILE_SIZE - TILE_SIZE;
@@ -89,21 +97,25 @@ void PlayerTank::shoot(Game &game) {
     bullets.emplace_back(bulletX, bulletY, direction, true);
     game.playShootSound();
 }
-const SDL_Rect PlayerTank::getRect() const {
-    return rect;
-}
 
 vector<Bullet>& PlayerTank::getBullets() {
     return bullets;
 }
 
+const SDL_Rect PlayerTank::getRect() const {
+    return rect;
+}
+
 void PlayerTank::takeDamage(Game &game) {
     health--;
     if (health <= 0) {
+        game.addExplosion(rect.x, rect.y);
+        game.playExplosionSound();
+        SDL_Delay(400);
         game.setGameOver();
     }
 }
 
-bool PlayerTank::isDestroyed() const {
-    return health <= 0;
+void PlayerTank::setIsMoving(bool moving) {
+    isMoving = moving;
 }

@@ -14,7 +14,7 @@ public:
     EnemyTank(int x, int y);
     ~EnemyTank() {}
 
-    void render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) const;
+    void render(SDL_Renderer* renderer, SDL_Texture* spriteSheet);
     void move(const std::vector<Wall>& walls, const PlayerTank& player, const std::vector<EnemyTank>& enemies);
     void shoot();
     void updateBullets(std::vector<Wall>& walls, PlayerTank& player, std::vector<EnemyTank>& enemies,Game &game);
@@ -29,6 +29,9 @@ private:
     int speed;
     int direction;
     int health;
+    int currentFrame;
+    Uint32 lastFrameTime;
+    bool isMoving;
     std::vector<Bullet> bullets;
     int moveCooldown;
     int shootCooldown;

@@ -23,14 +23,19 @@ public:
 
     bool init();
     void setGameOver();
+    void setGameWin();
+    void renderGameOverScreen();
+    void renderWinScreen();
     void render();
     void run();
-    void handleEvents();
+    void handleEvents(PlayerTank& player);
     void close();
     void playShootSound();
     void playExplosionSound();
     void addExplosion(int x, int y);
+    void updateExplosions();
     void removeWall(int x, int y);
+    void loadNextMap();
     SDL_Texture* spriteSheet;
 
 private:
@@ -38,6 +43,8 @@ private:
     SDL_Renderer* renderer;
     bool running;
     bool gameOver;
+    bool gameWin;
+    int currentMap;
     Mix_Music* backgroundMusic;
     Mix_Chunk* shootSound;
     Mix_Chunk* explosionSound;
@@ -49,6 +56,8 @@ private:
     struct Explosion {
         int x, y;
         Uint32 startTime;
+        int currentFrame;
+        int currentSize;
     };
     std::vector<Explosion> explosions;
     void generateBorders();

@@ -1,14 +1,16 @@
 #include "Game.h"
+#include "MainMenu.h"
 #include <SDL.h>
 #include <SDL_mixer.h>
 #include <SDL_image.h>
 
 using namespace std;
 
-Game::Game() : window(nullptr), renderer(nullptr), running(true), gameOver(false), backgroundMusic(nullptr), shootSound(nullptr), explosionSound(nullptr), player(360, 320) {
+Game::Game() : window(nullptr), renderer(nullptr), running(true), gameOver(false), gameWin(false), currentMap(1), backgroundMusic(nullptr), shootSound(nullptr), explosionSound(nullptr), player(360, 320) {
     srand(time(nullptr));
     spriteSheet= nullptr;
     generateBorders();
+    loadNextMap();
 }
 Game::~Game() {
     close();
@@ -65,14 +67,47 @@ bool Game::init() {
         return false;
     }
 
-    loadMapFromFile("Map/Map1.txt");
-    generateEnemies(4);
-
     return true;
 }
 
 void Game::setGameOver() {
     gameOver = true;
+}
+
+void Game::setGameWin() {
+    gameWin = true;
+}
+
+void Game::renderGameOverScreen() {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+    SDL_Texture* gameOverTexture = IMG_LoadTexture(renderer, "C:\\SDL2\\BattleCity\\Lose.png");
+    if (!gameOverTexture) {
+        cerr << "Failed to load game over texture! SDL Error: " << SDL_GetError() << endl;
+        return;
+    }
+    int width, height;
+    SDL_QueryTexture(gameOverTexture, nullptr, nullptr, &width, &height);
+    SDL_Rect gameOverRect = {(SCREEN_WIDTH - width) / 2, (SCREEN_HEIGHT - height) / 2, width, height};
+    SDL_RenderCopy(renderer, gameOverTexture, nullptr, &gameOverRect);
+    SDL_DestroyTexture(gameOverTexture);
+    SDL_RenderPresent(renderer);
+}
+
+void Game::renderWinScreen() {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+    SDL_Texture* winTextTexture = IMG_LoadTexture(renderer, "C:\\SDL2\\BattleCity\\Win.png");
+    if (!winTextTexture) {
+        cerr << "Failed to load win text texture! SDL Error: " << SDL_GetError() << endl;
+        return;
+    }
+    int width, height;
+    SDL_QueryTexture(winTextTexture, nullptr, nullptr, &width, &height);
+    SDL_Rect winTextRect = {(SCREEN_WIDTH - width) / 2, (SCREEN_HEIGHT - height) / 2, width, height};
+    SDL_RenderCopy(renderer, winTextTexture, nullptr, &winTextRect);
+    SDL_DestroyTexture(winTextTexture);
+    SDL_RenderPresent(renderer);
 }
 
 void Game::render() {
@@ -104,11 +139,18 @@ void Game::render() {
     }
 
     for (const Explosion& explosion : explosions) {
-        SDL_Rect srcRect = {1120, 519, 56, 56};
-        SDL_Rect destRect = {explosion.x, explosion.y, TILE_SIZE, TILE_SIZE};
+        SDL_Rect srcRect;
+        switch (explosion.currentFrame) {
+            case 0: srcRect = {1063, 526, 47, 40}; break;
+            case 1: srcRect = {1119, 514, 59, 61}; break;
+            case 2: srcRect = {1183, 510, 63, 68}; break;
+            case 3: srcRect = {1251, 522, 115, 108}; break;
+            case 4: srcRect = {1371, 515, 130, 127}; break;
+            default: srcRect = {1063, 526, 47, 40}; break;
+        }
+        SDL_Rect destRect = {explosion.x, explosion.y, explosion.currentSize, explosion.currentSize};
         SDL_RenderCopy(renderer, spriteSheet, &srcRect, &destRect);
     }
-    explosions.erase(remove_if(explosions.begin(), explosions.end(),[](const Explosion& e) { return SDL_GetTicks() - e.startTime > 500; }),explosions.end());
 
     for (const Wall& wall : walls) {
         if(wall.isCamouflaged()) {
@@ -120,22 +162,63 @@ void Game::render() {
 }
 
 void Game::run() {
+    MainMenu menu(renderer);
+    menu.show();
     while (running) {
-        handleEvents();
+        handleEvents(player);
         updateBullets();
         updateEnemies();
+        updateExplosions();
         render();
         if (enemyTanks.empty()) {
-            cout << "🎉 You Win! All enemies defeated!" << endl;
-            SDL_Delay(10);
-            running = false;
+            if (currentMap == 1) {
+                SDL_Delay(400);
+                currentMap = 2;
+                loadNextMap();
+            } else if (currentMap == 2) {
+                SDL_Delay(400);
+                currentMap = 3;
+                loadNextMap();
+            } else {
+                SDL_Delay(400);
+                setGameWin();
+            }
         }
         if (gameOver) {
-            cout << "💀 Game Over! You were destroyed!" << endl;
-            SDL_Delay(10);
+            renderGameOverScreen();
+            SDL_Delay(3000);
+            running = false;
+        }
+        if (gameWin) {
+            renderWinScreen();
+            SDL_Delay(3000);
             running = false;
         }
         SDL_Delay(10);
+    }
+}
+
+void Game::handleEvents(PlayerTank& player) {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) running = false;
+        else if (event.type == SDL_KEYDOWN) {
+            if (event.key.keysym.sym == SDLK_LSHIFT || event.key.keysym.sym == SDLK_RSHIFT) {
+                player.setBoostedMoves(3);
+            }
+            switch (event.key.keysym.sym) {
+                case SDLK_UP:    player.move(0, -1, walls, enemyTanks); player.setIsMoving(true); break;
+                case SDLK_DOWN:  player.move(0, 1, walls, enemyTanks); player.setIsMoving(true); break;
+                case SDLK_LEFT:  player.move(-1, 0, walls, enemyTanks); player.setIsMoving(true); break;
+                case SDLK_RIGHT: player.move(1, 0, walls, enemyTanks); player.setIsMoving(true); break;
+                case SDLK_SPACE: player.shoot(*this); break;
+            }
+        } else if (event.type == SDL_KEYUP) {
+            switch (event.key.keysym.sym) {
+                case SDLK_UP: case SDLK_DOWN: case SDLK_LEFT: case SDLK_RIGHT:
+                    player.setIsMoving(false);
+            }
+        }
     }
 }
 
@@ -165,24 +248,55 @@ void Game::playExplosionSound() {
 }
 
 void Game::addExplosion(int x, int y) {
-    explosions.push_back({x, y, SDL_GetTicks()});
+    explosions.push_back({x, y, SDL_GetTicks(), 0, 10});
 }
 
-void Game::handleEvents() {
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-        if (event.type == SDL_QUIT) running = false;
-        else if (event.type == SDL_KEYDOWN) {
-            switch (event.key.keysym.sym) {
-                case SDLK_UP:    player.move(0, -1, walls, enemyTanks); break;
-                case SDLK_DOWN:  player.move(0, 1, walls, enemyTanks); break;
-                case SDLK_LEFT:  player.move(-1, 0, walls, enemyTanks); break;
-                case SDLK_RIGHT: player.move(1, 0, walls, enemyTanks); break;
-                case SDLK_SPACE: player.shoot(*this); break;
-            }
+void Game::updateExplosions() {
+    Uint32 currentTime = SDL_GetTicks();
+    for (Explosion& explosion : explosions) {
+        if (currentTime < 500) {
+            explosion.currentSize = 10 + ((currentTime - explosion.startTime) * (TILE_SIZE - 10)) / 500;
+        } else {
+            explosion.currentSize = TILE_SIZE;
+        }
+        if (currentTime - explosion.startTime > 100) {
+            explosion.currentFrame++;
+            explosion.startTime = currentTime;
         }
     }
+    explosions.erase(remove_if(explosions.begin(), explosions.end(),
+    [](const Explosion& e) { return e.currentFrame >= 5; }),
+    explosions.end());
 }
+
+void Game::removeWall(int x, int y) {
+    walls.erase(remove_if(walls.begin(), walls.end(),
+        [x, y](const Wall& w) {
+            return w.getRect().x == x && w.getRect().y == y;
+        }),
+        walls.end());
+}
+
+void Game::loadNextMap() {
+    map.clear();
+    walls.clear();
+    enemyTanks.clear();
+    player.getBullets().clear();
+    explosions.clear();
+
+    if (currentMap == 1) {
+        loadMapFromFile("Map/Map1.txt");
+        generateEnemies(3);
+    } else if (currentMap == 2) {
+        loadMapFromFile("Map/Map2.txt");
+        generateEnemies(4);
+    } else if (currentMap == 3) {
+        loadMapFromFile("Map/Map3.txt");
+        generateEnemies(5);
+    }
+    player = PlayerTank(360, 320);
+}
+
 void Game::generateBorders() {
     borders.clear();
 
@@ -243,7 +357,7 @@ void Game::updateBullets() {
     }
 
     playerBullets.erase(remove_if(playerBullets.begin(), playerBullets.end(),
-        [](const Bullet& b) { return b.isOffScreen() || b.hasCollided(); }),
+        [](const Bullet& b) { return b.hasCollided(); }),
         playerBullets.end());
 
     for (EnemyTank& enemy : enemyTanks) {
@@ -298,13 +412,4 @@ void Game::generateEnemies(int numEnemies) {
             enemyTanks.emplace_back(x, y);
         }
     }
-}
-
-
-void Game::removeWall(int x, int y) {
-    walls.erase(remove_if(walls.begin(), walls.end(),
-        [x, y](const Wall& w) {
-            return w.getRect().x == x && w.getRect().y == y;
-        }),
-        walls.end());
 }

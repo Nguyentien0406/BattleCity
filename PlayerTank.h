@@ -14,21 +14,26 @@ public:
     PlayerTank(int x, int y);
     ~PlayerTank() {}
 
-    void render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) const;
+    void render(SDL_Renderer* renderer, SDL_Texture* spriteSheet);
     void move(int dx, int dy, const std::vector<class Wall>& walls, const std::vector<class EnemyTank>& enemies);
     void shoot(Game &game);
 
     std::vector<Bullet>& getBullets();
     const SDL_Rect getRect() const;
     void takeDamage(Game &game);
-    bool isDestroyed() const;
+    void setIsMoving(bool moving);
+    void setBoostedMoves(int moves) { boostedMoves = moves; }
 
 private:
     SDL_Rect rect;
     int speed;
+    int baseSpeed;
     int direction;
     int health;
-    int lives;
+    int currentFrame;
+    Uint32 lastFrameTime;
+    bool isMoving;
+    int boostedMoves;
     std::vector<Bullet> bullets;
 };
 

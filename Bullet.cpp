@@ -3,7 +3,7 @@
 
 using namespace std;
 
-Bullet::Bullet(int x, int y, int dir, bool fromPlayer) : speed(BULLET_SPEED), direction(dir), offScreen(false), collided(false), isFromPlayer(fromPlayer) {
+Bullet::Bullet(int x, int y, int dir, bool fromPlayer) : speed(BULLET_SPEED), direction(dir), collided(false), isFromPlayer(fromPlayer) {
     rect.x = x;
     rect.y = y;
     rect.w = BULLET_SIZE;
@@ -40,18 +40,16 @@ void Bullet::update(vector<Wall>& walls, PlayerTank& player, vector<EnemyTank>& 
     for (Wall& wall : walls) {
         if (SDL_HasIntersection(&rect, &wall.getRect())) {
             if (wall.isBreakable()) {
-                wall.takeDamage();
+                wall.takeDamage(direction);
                 if (wall.isDestroyed()) {
                     game.removeWall(wall.getRect().x, wall.getRect().y);
                 }
                 collided = true;
-                offScreen = true;
                 return;
             } else if(wall.isCamouflaged()) {
                 continue;
             } else{
                 collided = true;
-                offScreen = true;
                 return;
             }
         }
@@ -60,7 +58,6 @@ void Bullet::update(vector<Wall>& walls, PlayerTank& player, vector<EnemyTank>& 
     SDL_Rect playerRect = player.getRect();
     if (!isFromPlayer && SDL_HasIntersection(&rect, &playerRect)) {
         collided = true;
-        offScreen = true;
         player.takeDamage(game);
         return;
     }
@@ -75,19 +72,15 @@ void Bullet::update(vector<Wall>& walls, PlayerTank& player, vector<EnemyTank>& 
                     enemies.erase(it);
                 }
             collided = true;
-            offScreen = true;
             return;
             }
         }
     }
 
-    if (rect.x < 0 || rect.x > SCREEN_WIDTH || rect.y < 0 || rect.y > SCREEN_HEIGHT) {
-        offScreen = true;
+    if (rect.x <= TILE_SIZE || rect.x + BULLET_SIZE >= SCREEN_WIDTH - TILE_SIZE ||
+        rect.y <= TILE_SIZE || rect.y + BULLET_SIZE >= SCREEN_HEIGHT - TILE_SIZE) {
+        collided = true;
     }
-}
-
-bool Bullet::isOffScreen() const {
-    return offScreen;
 }
 
 bool Bullet::hasCollided() const {
