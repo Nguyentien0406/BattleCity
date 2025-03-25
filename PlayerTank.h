@@ -14,15 +14,35 @@ public:
     PlayerTank(int x, int y);
     ~PlayerTank() {}
 
-    void render(SDL_Renderer* renderer, SDL_Texture* spriteSheet);
-    void move(int dx, int dy, const std::vector<class Wall>& walls, const std::vector<class EnemyTank>& enemies);
+    void render(SDL_Renderer* renderer, SDL_Texture* spriteSheet, bool isOtherPlayer);
+    void move(int dx, int dy, const std::vector<class Wall>& walls, const std::vector<class EnemyTank>& enemies, const PlayerTank& otherPlayer);
     void shoot(Game &game);
 
     std::vector<Bullet>& getBullets();
     const SDL_Rect getRect() const;
-    void takeDamage(Game &game);
-    void setIsMoving(bool moving);
+    void takeDamage();
+    bool isDestroyed() const;
+
+    int getHealth() const { return health; }
+    void setHealth(int health) { this->health = health; }
+
+    int getSpeed() const { return speed; }
+    void setSpeed(int s) { speed = s; }
+
+    int getDirection() const { return direction; }
+    void setDirection(int d) { direction = d; }
+
+    int getCurrentFrame() const { return currentFrame; }
+    void setCurrentFrame(int f) { currentFrame = f; }
+
+    bool getIsMoving() const {return isMoving;}
+    void setIsMoving(bool moving) { isMoving = moving; }
+
+    int getBoostedMoves() const { return boostedMoves; }
     void setBoostedMoves(int moves) { boostedMoves = moves; }
+
+    bool isAlive() const { return alive; }
+    void setAlive(bool status) { alive = status; }
 
 private:
     SDL_Rect rect;
@@ -35,6 +55,7 @@ private:
     bool isMoving;
     int boostedMoves;
     std::vector<Bullet> bullets;
+    bool alive;
 };
 
 #endif

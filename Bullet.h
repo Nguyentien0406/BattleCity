@@ -15,8 +15,10 @@ public:
     ~Bullet() {}
 
     void render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) const;
-    void update(std::vector<Wall>& walls, PlayerTank& player, std::vector<EnemyTank>& enemies, Game &game);
+    void update(std::vector<Wall>& walls, PlayerTank& player, PlayerTank& otherPlayer, std::vector<EnemyTank>& enemies, Game& game);
     bool hasCollided() const;
+    const SDL_Rect getRect() const { return rect; }
+    int getDirection() const { return direction; }
 
 private:
     SDL_Rect rect;

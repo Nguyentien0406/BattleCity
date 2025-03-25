@@ -7,21 +7,18 @@
 
 class MainMenu {
 public:
+    enum MenuAction { START_GAME, CONTINUE_GAME, EXIT_GAME };
     MainMenu(SDL_Renderer* renderer);
     ~MainMenu();
-    bool show();
+    MenuAction ShowMenu(bool saveFile);
 
 private:
     SDL_Renderer* renderer;
     TTF_Font* fontTitle;
-    TTF_Font* fontStart;
-    SDL_Texture* titleTexture;
-    SDL_Texture* startTexture;
-    SDL_Rect titleRect;
-    SDL_Rect startRect;
-
-    void render();
-    void handleEvents(bool &running);
+    TTF_Font* fontMenu;
+    int selectedOption;
+    void RenderMenu(bool saveFile);
+    void HandleInput(bool& menuRunning, bool saveFile);
 };
 
 #endif

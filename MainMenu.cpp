@@ -1,77 +1,85 @@
 #include "MainMenu.h"
-#include <SDL_image.h>
-#include <iostream>
+#include "Game.h"
 
 using namespace std;
 
-MainMenu::MainMenu(SDL_Renderer* renderer) : renderer(renderer) {
-    TTF_Init();
+MainMenu::MainMenu(SDL_Renderer* renderer) : renderer(renderer),fontTitle(nullptr), fontMenu(nullptr), selectedOption(0) {
     fontTitle = TTF_OpenFont("Font/Font1.ttf", 64);
-    fontStart = TTF_OpenFont("Font/Font1.ttf", 32);
-
-    if (!fontTitle || !fontStart) {
-        cerr << "Lỗi tải font: " << TTF_GetError() << "\n";
+    fontMenu = TTF_OpenFont("Font/Font1.ttf", 30);
+    if (!fontTitle || !fontMenu) {
+        cerr << "Failed to load fonts: " << TTF_GetError() << endl;
+        throw runtime_error("Font initialization failed");
     }
-
-    SDL_Color white = {255, 255, 255, 255};
-
-
-    SDL_Surface* titleSurface = TTF_RenderText_Solid(fontTitle, "BattleCity", white);
-    titleTexture = SDL_CreateTextureFromSurface(renderer, titleSurface);
-
-
-    SDL_Surface* startSurface = TTF_RenderText_Solid(fontStart, "Start", white);
-    startTexture = SDL_CreateTextureFromSurface(renderer, startSurface);
-
-
-    titleRect.w = titleSurface->w;
-    titleRect.h = titleSurface->h;
-    titleRect.x = (800 - titleRect.w) / 2;
-    titleRect.y = 150;
-
-    startRect.w = startSurface->w;
-    startRect.h = startSurface->h;
-    startRect.x = (800 - startRect.w) / 2;
-    startRect.y = 300;
-
-    SDL_FreeSurface(titleSurface);
-    SDL_FreeSurface(startSurface);
 }
 
 MainMenu::~MainMenu() {
-    SDL_DestroyTexture(titleTexture);
-    SDL_DestroyTexture(startTexture);
-    TTF_CloseFont(fontTitle);
-    TTF_CloseFont(fontStart);
-    TTF_Quit();
+    if (fontTitle) TTF_CloseFont(fontTitle);
+    if (fontMenu) TTF_CloseFont(fontMenu);
 }
 
-void MainMenu::render() {
+MainMenu::MenuAction MainMenu::ShowMenu(bool saveFile) {
+    bool menuRunning = true;
+    MenuAction action = EXIT_GAME;
+    while (menuRunning) {
+        HandleInput(menuRunning, saveFile);
+        if (!menuRunning) {
+            action = (selectedOption == 0) ? START_GAME : CONTINUE_GAME;
+        }
+        RenderMenu(saveFile);
+        SDL_Delay(16);
+    }
+    return action;
+}
+
+void MainMenu::RenderMenu(bool saveFile) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
-
+    SDL_Color white = {255, 255, 255, 255};
+    SDL_Surface* titleSurface = TTF_RenderText_Solid(fontTitle, "BATTLE CITY", white);
+    SDL_Texture* titleTexture = SDL_CreateTextureFromSurface(renderer, titleSurface);
+    SDL_Rect titleRect = {(SCREEN_WIDTH - titleSurface->w)/2, 150, titleSurface->w, titleSurface->h};
     SDL_RenderCopy(renderer, titleTexture, nullptr, &titleRect);
+    SDL_Color red = {255, 0, 0, 255};
+    SDL_Color startColor = (selectedOption == 0) ? red : white;
+    SDL_Surface* startSurface = TTF_RenderText_Solid(fontMenu, "START", startColor);
+    SDL_Texture* startTexture = SDL_CreateTextureFromSurface(renderer, startSurface);
+    SDL_Rect startRect = {(SCREEN_WIDTH - startSurface->w)/2, 330, startSurface->w, startSurface->h};
     SDL_RenderCopy(renderer, startTexture, nullptr, &startRect);
+    if (saveFile) {
+        SDL_Color continueColor = (selectedOption == 1) ? red : white;
+        SDL_Surface* continueSurface = TTF_RenderText_Solid(fontMenu, "CONTINUE", continueColor);
+        SDL_Texture* continueTexture = SDL_CreateTextureFromSurface(renderer, continueSurface);
+        SDL_Rect continueRect = {(SCREEN_WIDTH - continueSurface->w)/2, 400, continueSurface->w, continueSurface->h};
+        SDL_RenderCopy(renderer, continueTexture, nullptr, &continueRect);
+        SDL_FreeSurface(continueSurface);
+        SDL_DestroyTexture(continueTexture);
+    }
+    SDL_FreeSurface(titleSurface);
+    SDL_FreeSurface(startSurface);
+    SDL_DestroyTexture(titleTexture);
+    SDL_DestroyTexture(startTexture);
 
     SDL_RenderPresent(renderer);
 }
 
-void MainMenu::handleEvents(bool &running) {
+void MainMenu::HandleInput(bool& menuRunning, bool hasSaveFile) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
-        if (event.type == SDL_QUIT) {
-            running = false;
-        } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_RETURN) {
-            running = false;
+        if (event.type == SDL_QUIT ||
+           (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) {
+            menuRunning = false;
+            exit(0);
+        }
+        if (event.type == SDL_KEYDOWN) {
+            switch (event.key.keysym.sym) {
+                case SDLK_UP:
+                case SDLK_DOWN:
+                    if (hasSaveFile) selectedOption = 1 - selectedOption;
+                    break;
+                case SDLK_RETURN:
+                    menuRunning = false;
+                    break;
+            }
         }
     }
-}
-
-bool MainMenu::show() {
-    bool running = true;
-    while (running) {
-        handleEvents(running);
-        render();
-    }
-    return true;
 }

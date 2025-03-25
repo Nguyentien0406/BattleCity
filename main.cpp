@@ -5,7 +5,7 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
     Game game;
-    if (!game.init()) {
+    if(!game.init()) {
         return 1;
     }
     game.run();

@@ -11,6 +11,8 @@
 #include <ctime>
 #include <fstream>
 #include <sstream>
+#include <cstdio>
+#include <string>
 #include "Wall.h"
 #include "Bullet.h"
 #include "PlayerTank.h"
@@ -22,13 +24,13 @@ public:
     ~Game();
 
     bool init();
-    void setGameOver();
+    void setGameOver(PlayerTank& player, PlayerTank& otherPlayer);
     void setGameWin();
     void renderGameOverScreen();
     void renderWinScreen();
     void render();
     void run();
-    void handleEvents(PlayerTank& player);
+    void handleEvents(PlayerTank& player, PlayerTank& otherPlayer);
     void close();
     void playShootSound();
     void playExplosionSound();
@@ -49,17 +51,20 @@ private:
     Mix_Chunk* shootSound;
     Mix_Chunk* explosionSound;
     PlayerTank player;
+    PlayerTank otherPlayer;
     std::vector<SDL_Rect> borders;
     std::vector<std::vector<int>> map;
     std::vector<Wall> walls;
     std::vector<EnemyTank> enemyTanks;
-    struct Explosion {
+    struct Explosion{
         int x, y;
         Uint32 startTime;
         int currentFrame;
         int currentSize;
     };
     std::vector<Explosion> explosions;
+    void saveGame(const std::string& filename);
+    void loadGame(const std::string& filename);
     void generateBorders();
     void renderBorders();
     void loadMapFromFile(const std::string& filename);

@@ -5,11 +5,11 @@
 #include <SDL.h>
 #include <vector>
 
-const int SCREEN_WIDTH = 800;
-const int SCREEN_HEIGHT = 600;
-const int TILE_SIZE = 40;
-const int BULLET_SIZE = 10;
-const int BULLET_SPEED = 10;
+const int SCREEN_WIDTH= 800;
+const int SCREEN_HEIGHT= 600;
+const int TILE_SIZE= 40;
+const int BULLET_SIZE= 10;
+const int BULLET_SPEED= 10;
 
 class Wall {
 public:
@@ -22,6 +22,16 @@ public:
     bool isCamouflaged() const { return camouflaged; }
     void takeDamage(int direction);
     bool isDestroyed() const;
+    void setSize(int w, int h) { rect.w= w; rect.h= h; }
+
+    int getHitPoints() const { return hitPoints; }
+    void setHitPoints(int hp) { hitPoints= hp; }
+
+    bool isHalfDamaged() const { return halfDamaged; }
+    void setHalfDamaged(bool damaged) { halfDamaged= damaged; }
+
+    int getDamageDirection() const { return damageDirection; }
+    void setDamageDirection(int direction) { damageDirection= direction; }
 
 private:
     SDL_Rect rect;
