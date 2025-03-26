@@ -154,6 +154,10 @@ void Game::render() {
         enemy.render(renderer, spriteSheet);
     }
 
+    for(BossTank& boss : bossTanks) {
+        boss.render(renderer, spriteSheet);
+    }
+
     if (player.isAlive()) {
         for(const Bullet& bullet : player.getBullets()) {
             bullet.render(renderer, spriteSheet);
@@ -172,17 +176,24 @@ void Game::render() {
         }
     }
 
+    for (BossTank& boss : bossTanks) {
+        for (const Bullet& bullet : boss.getBullets()) {
+            bullet.render(renderer, spriteSheet);
+        }
+    }
+
     for(const Explosion& explosion : explosions) {
         SDL_Rect srcRect;
         switch(explosion.currentFrame) {
-            case 0: srcRect= {1063, 526, 47, 40}; break;
-            case 1: srcRect= {1119, 514, 59, 61}; break;
-            case 2: srcRect= {1183, 510, 63, 68}; break;
-            case 3: srcRect= {1251, 522, 115, 108}; break;
-            case 4: srcRect= {1371, 515, 130, 127}; break;
-            default: srcRect= {1063, 526, 47, 40}; break;
+            case 0: srcRect= {160, 392, 11, 11}; break;
+            case 1: srcRect= {173, 391, 13, 13}; break;
+            case 2: srcRect= {191, 393, 11, 10}; break;
+            case 3: srcRect= {205, 391, 15, 13}; break;
+            case 4: srcRect= {165, 409, 32, 29}; break;
+            default: srcRect= {165, 409, 32, 29}; break;
         }
-        SDL_Rect destRect= {explosion.x, explosion.y, explosion.currentSize, explosion.currentSize};
+        SDL_Rect destRect= {explosion.centerX- explosion.currentRadius, explosion.centerY- explosion.currentRadius,
+        explosion.currentRadius* 2, explosion.currentRadius* 2};
         SDL_RenderCopy(renderer, spriteSheet, &srcRect, &destRect);
     }
 
@@ -191,7 +202,6 @@ void Game::render() {
             wall.render(renderer, spriteSheet);
         }
     }
-
     SDL_RenderPresent(renderer);
 }
 
@@ -223,39 +233,40 @@ void Game::run() {
             if(player.isAlive()) {
                 if(player.getIsMoving()) {
                     switch(player.getDirection()) {
-                        case 0: player.move(0, -1, walls, enemyTanks, otherPlayer); break;
-                        case 1: player.move(0, 1, walls, enemyTanks, otherPlayer); break;
-                        case 2: player.move(-1, 0, walls, enemyTanks, otherPlayer); break;
-                        case 3: player.move(1, 0, walls, enemyTanks, otherPlayer); break;
+                        case 0: player.move(0, -1, walls, enemyTanks, bossTanks, otherPlayer); break;
+                        case 1: player.move(0, 1, walls, enemyTanks, bossTanks, otherPlayer); break;
+                        case 2: player.move(-1, 0, walls, enemyTanks, bossTanks, otherPlayer); break;
+                        case 3: player.move(1, 0, walls, enemyTanks, bossTanks, otherPlayer); break;
                     }
                 }
             }
             if(otherPlayer.isAlive()) {
                 if(otherPlayer.getIsMoving()) {
                     switch(otherPlayer.getDirection()) {
-                        case 0: otherPlayer.move(0, -1, walls, enemyTanks, player); break;
-                        case 1: otherPlayer.move(0, 1, walls, enemyTanks, player); break;
-                        case 2: otherPlayer.move(-1, 0, walls, enemyTanks, player); break;
-                        case 3: otherPlayer.move(1, 0, walls, enemyTanks, player); break;
+                        case 0: otherPlayer.move(0, -1, walls, enemyTanks, bossTanks, player); break;
+                        case 1: otherPlayer.move(0, 1, walls, enemyTanks, bossTanks, player); break;
+                        case 2: otherPlayer.move(-1, 0, walls, enemyTanks, bossTanks, player); break;
+                        case 3: otherPlayer.move(1, 0, walls, enemyTanks, bossTanks, player); break;
                     }
                 }
             }
             handleEvents(player, otherPlayer);
             updateBullets();
             updateEnemies();
+            updateBosses();
             updateExplosions();
             render();
-            if(enemyTanks.empty()) {
+            if(enemyTanks.empty()&& bossTanks.empty()) {
                 if(currentMap == 1) {
-                    SDL_Delay(400);
+                    SDL_Delay(200);
                     currentMap = 2;
                     loadNextMap();
                 } else if(currentMap == 2) {
-                    SDL_Delay(400);
+                    SDL_Delay(200);
                     currentMap = 3;
                     loadNextMap();
                 } else{
-                    SDL_Delay(400);
+                    SDL_Delay(200);
                     setGameWin();
                 }
             }
@@ -355,26 +366,37 @@ void Game::playExplosionSound() {
     }
 }
 
-void Game::addExplosion(int x, int y) {
-    explosions.push_back({x, y, SDL_GetTicks(), 0, 10});
+void Game::addExplosion(int x, int y, bool isBoss) {
+    Explosion explosion;
+    explosion.centerX= x;
+    explosion.centerY= y;
+    explosion.startTime= SDL_GetTicks();
+    explosion.currentFrame= 0;
+    if(isBoss) {
+        explosion.currentRadius= 10;
+        explosion.maxRadius= TILE_SIZE;
+    } else{
+        explosion.currentRadius= 5;
+        explosion.maxRadius= TILE_SIZE/ 2;
+    }
+    explosions.push_back(explosion);
 }
 
 void Game::updateExplosions() {
     Uint32 currentTime= SDL_GetTicks();
-    for(Explosion& explosion : explosions) {
-        if(currentTime< 500) {
-            explosion.currentSize= 5+ ((currentTime- explosion.startTime)* (TILE_SIZE- 10))/ 500;
-        } else{
-            explosion.currentSize= TILE_SIZE;
+    for(auto it= explosions.begin(); it != explosions.end(); ) {
+        Explosion& e= *it;
+        Uint32 elapsed= currentTime- e.startTime;
+        if(elapsed < 500) {
+            e.currentRadius= 5+ (elapsed* (e.maxRadius - 5))/ 500;
         }
-        if(currentTime- explosion.startTime> 100) {
-            explosion.currentFrame++;
-            explosion.startTime= currentTime;
+        e.currentFrame= min(4, (int)(elapsed/ 100));
+        if(elapsed >= 500) {
+            it= explosions.erase(it);
+        } else {
+            ++it;
         }
     }
-    explosions.erase(remove_if(explosions.begin(), explosions.end(),
-    [](const Explosion& e) { return e.currentFrame>= 5; }),
-    explosions.end());
 }
 
 void Game::removeWall(int x, int y) {
@@ -389,6 +411,7 @@ void Game::loadNextMap() {
     map.clear();
     walls.clear();
     enemyTanks.clear();
+    bossTanks.clear();
     player.getBullets().clear();
     otherPlayer.getBullets().clear();
     explosions.clear();
@@ -401,13 +424,14 @@ void Game::loadNextMap() {
     }
     if(currentMap== 1) {
         loadMapFromFile("Map/Map1.txt");
-        generateEnemies(3);
+        generateEnemies(4);
     } else if(currentMap== 2) {
         loadMapFromFile("Map/Map2.txt");
-        generateEnemies(4);
+        generateEnemies(5);
     } else if(currentMap== 3) {
         loadMapFromFile("Map/Map3.txt");
-        generateEnemies(5);
+        generateEnemies(3);
+        generateBosses(2);
     }
 }
 
@@ -441,6 +465,15 @@ void Game::saveGame(const string& filename) {
         file << enemy.getRect().x << " " << enemy.getRect().y << " " << enemy.getHealth()<< " " << enemy.getDirection() << " " << enemy.getChangeDirectionCooldown() << endl;
         file << enemy.getBullets().size() << endl;
         for(const auto& bullet : enemy.getBullets()) {
+            file << bullet.getRect().x << " " << bullet.getRect().y << " " << bullet.getDirection() << endl;
+        }
+    }
+
+    file << bossTanks.size() << endl;
+    for(auto& boss : bossTanks) {
+        file << boss.getRect().x << " " << boss.getRect().y << " " << boss.getHealth()<< " " << boss.getDirection() << " " << boss.getChangeDirectionCooldown() << endl;
+        file << boss.getBullets().size() << endl;
+        for(const auto& bullet : boss.getBullets()) {
             file << bullet.getRect().x << " " << bullet.getRect().y << " " << bullet.getDirection() << endl;
         }
     }
@@ -481,7 +514,7 @@ void Game::loadGame(const string& filename) {
     for(int i= 0; i< numBullets; ++i) {
         int bulletX, bulletY, direction;
         file >> bulletX >> bulletY >> direction;
-        player.getBullets().emplace_back(bulletX, bulletY, direction, true);
+        player.getBullets().emplace_back(bulletX, bulletY, direction, true, false);
     }
 
     file >> playerX >> playerY >> playerHealth >> speed >> boostedMoves >> direction >> currentFrame >> playerAlive;
@@ -498,7 +531,7 @@ void Game::loadGame(const string& filename) {
     for(int i= 0; i< numBullets; ++i) {
         int bulletX, bulletY, direction;
         file >> bulletX >> bulletY >> direction;
-        otherPlayer.getBullets().emplace_back(bulletX, bulletY, direction, true);
+        otherPlayer.getBullets().emplace_back(bulletX, bulletY, direction, true, false);
     }
 
     int numEnemies;
@@ -515,7 +548,25 @@ void Game::loadGame(const string& filename) {
         for (int j= 0; j< numBullets; j++) {
             int bulletX, bulletY, bulletDirection;
             file >> bulletX >> bulletY >> bulletDirection;
-            enemyTanks.back().getBullets().emplace_back(bulletX, bulletY, bulletDirection, false);
+            enemyTanks.back().getBullets().emplace_back(bulletX, bulletY, bulletDirection, false, false);
+        }
+    }
+
+    int numBosses;
+    file >> numBosses;
+    bossTanks.clear();
+    for(int i=0;i< numBosses; i++) {
+        int bossX, bossY, bossHealth, bossDirection, bossChangeCooldown;
+        file >> bossX >> bossY >> bossHealth >> bossDirection >> bossChangeCooldown;
+        bossTanks.emplace_back(bossX, bossY);
+        bossTanks.back().setHealth(bossHealth);
+        bossTanks.back().setDirection(bossDirection);
+        bossTanks.back().setChangeDirectionCooldown(bossChangeCooldown);
+        file >> numBullets;
+        for (int j= 0; j< numBullets; j++) {
+            int bulletX, bulletY, bulletDirection;
+            file >> bulletX >> bulletY >> bulletDirection;
+            bossTanks.back().getBullets().emplace_back(bulletX, bulletY, bulletDirection, false, true);
         }
     }
 
@@ -593,7 +644,7 @@ void Game::updateBullets() {
     if(player.isAlive()) {
         vector<Bullet>& playerBullets = player.getBullets();
         for(Bullet& bullet : playerBullets) {
-            bullet.update(walls, player, otherPlayer, enemyTanks, *this);
+            bullet.update(walls, player, otherPlayer, enemyTanks, bossTanks, *this);
         }
         playerBullets.erase(remove_if(playerBullets.begin(), playerBullets.end(),
             [](const Bullet& b) { return b.hasCollided(); }),
@@ -603,21 +654,24 @@ void Game::updateBullets() {
     if(otherPlayer.isAlive()) {
         vector<Bullet>& otherPlayerBullets = otherPlayer.getBullets();
         for(Bullet& bullet : otherPlayerBullets) {
-            bullet.update(walls, player, otherPlayer, enemyTanks, *this);
+            bullet.update(walls, player, otherPlayer, enemyTanks, bossTanks, *this);
         }
         otherPlayerBullets.erase(remove_if(otherPlayerBullets.begin(), otherPlayerBullets.end(),
             [](const Bullet& b) { return b.hasCollided(); }),
             otherPlayerBullets.end());
     }
 
-        for(EnemyTank& enemy : enemyTanks) {
-            enemy.updateBullets(walls, player, otherPlayer, enemyTanks, *this);
-        }
+    for(EnemyTank& enemy : enemyTanks) {
+        enemy.updateBullets(walls, player, otherPlayer, enemyTanks, bossTanks, *this);
+    }
+    for(BossTank& boss : bossTanks) {
+        boss.updateBullets(walls, player, otherPlayer, enemyTanks, bossTanks, *this);
+    }
 }
 
 void Game::updateEnemies() {
     for(EnemyTank& enemy : enemyTanks) {
-        enemy.move(walls, player, otherPlayer, enemyTanks);
+        enemy.move(walls, player, otherPlayer, enemyTanks, bossTanks);
         enemy.shoot();
     }
 }
@@ -669,6 +723,72 @@ void Game::generateEnemies(int numEnemies) {
         }
         if (validPosition) {
             enemyTanks.emplace_back(x, y);
+        }
+    }
+}
+
+void Game::updateBosses() {
+    for(BossTank& boss : bossTanks) {
+        boss.move(walls, player, otherPlayer, enemyTanks, bossTanks);
+        boss.shoot();
+    }
+}
+
+void Game::generateBosses(int numBosses) {
+    for(int i= 0; i< numBosses; i++) {
+        bool validPosition= false;
+        int x, y;
+        while(!validPosition) {
+            x= (rand() % ((SCREEN_WIDTH- 2 * TILE_SIZE)/ TILE_SIZE))* TILE_SIZE+ TILE_SIZE;
+            y= (rand() % ((SCREEN_HEIGHT- 2 * TILE_SIZE)/ TILE_SIZE))* TILE_SIZE+ TILE_SIZE;
+            SDL_Rect bossRect= {x, y, TILE_SIZE* 2, TILE_SIZE* 2};
+            validPosition= true;
+
+            for(Wall& wall : walls) {
+                SDL_Rect wallRect= wall.getRect();
+                if(SDL_HasIntersection(&bossRect, &wallRect)) {
+                    validPosition= false;
+                    break;
+                }
+            }
+
+            if(player.isAlive()) {
+                SDL_Rect playerRect= player.getRect();
+                if(SDL_HasIntersection(&bossRect, &playerRect)) {
+                    validPosition= false;
+                }
+            }
+
+            if(otherPlayer.isAlive()) {
+                SDL_Rect otherPlayerRect= otherPlayer.getRect();
+                if(SDL_HasIntersection(&bossRect, &otherPlayerRect)) {
+                    validPosition= false;
+                }
+            }
+
+            for(EnemyTank& enemy : enemyTanks) {
+                SDL_Rect enemyHitbox= enemy.getRect();
+                if(SDL_HasIntersection(&bossRect, &enemyHitbox)) {
+                    validPosition= false;
+                    break;
+                }
+            }
+
+            for(BossTank& boss : bossTanks) {
+                SDL_Rect bossHitbox= boss.getRect();
+                if(SDL_HasIntersection(&bossRect, &bossHitbox)) {
+                    validPosition= false;
+                    break;
+                }
+            }
+
+            if(x< TILE_SIZE || x+ TILE_SIZE* 2> SCREEN_WIDTH- TILE_SIZE ||
+                y< TILE_SIZE || y+ TILE_SIZE* 2> SCREEN_HEIGHT- TILE_SIZE) {
+                validPosition= false;
+            }
+        }
+        if (validPosition) {
+            bossTanks.emplace_back(x, y);
         }
     }
 }

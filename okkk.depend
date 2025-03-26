@@ -6,50 +6,51 @@
 	"Game.h"
 	<SDL_mixer.h>
 
-1742929157 source:c:\sdl2\battlecity\bullet.cpp
+1743004306 source:c:\sdl2\battlecity\bullet.cpp
 	"Bullet.h"
 	"Game.h"
 
-1742923419 c:\sdl2\battlecity\bullet.h
+1742993801 c:\sdl2\battlecity\bullet.h
 	"Game.h"
 	"Wall.h"
 	"PlayerTank.h"
 	"EnemyTank.h"
+	"BossTank.h"
 	<SDL.h>
 	<SDL_mixer.h>
 	<vector>
 
-1742834894 c:\sdl2\battlecity\wall.h
+1742987535 c:\sdl2\battlecity\wall.h
 	"Game.h"
 	<SDL.h>
 	<vector>
 
-1742931452 source:c:\sdl2\battlecity\playertank.cpp
+1742998277 source:c:\sdl2\battlecity\playertank.cpp
 	"Game.h"
 	"PlayerTank.h"
 	<iostream>
 
-1742923419 c:\sdl2\battlecity\enemytank.h
+1742993309 c:\sdl2\battlecity\enemytank.h
 	"Wall.h"
 	<SDL.h>
 	<SDL_mixer.h>
 	<vector>
 
-1742928860 c:\sdl2\battlecity\playertank.h
+1742993309 c:\sdl2\battlecity\playertank.h
 	"Wall.h"
 	<SDL.h>
 	<SDL_mixer.h>
 	<vector>
 
-1742834894 source:c:\sdl2\battlecity\wall.cpp
+1742966537 source:c:\sdl2\battlecity\wall.cpp
 	"Wall.h"
 	"Game.h"
 
-1742928860 source:c:\sdl2\battlecity\enemytank.cpp
+1743003666 source:c:\sdl2\battlecity\enemytank.cpp
 	"EnemyTank.h"
 	"Game.h"
 
-1742929122 c:\sdl2\battlecity\game.h
+1743003256 c:\sdl2\battlecity\game.h
 	<SDL.h>
 	<SDL_mixer.h>
 	<SDL_image.h>
@@ -66,8 +67,9 @@
 	"Bullet.h"
 	"PlayerTank.h"
 	"EnemyTank.h"
+	"BossTank.h"
 
-1742931339 source:c:\sdl2\battlecity\game.cpp
+1743004439 source:c:\sdl2\battlecity\game.cpp
 	"Game.h"
 	"MainMenu.h"
 	<SDL.h>
@@ -75,12 +77,22 @@
 	<SDL_image.h>
 	<SDL_ttf.h>
 
-1742881375 source:c:\sdl2\battlecity\mainmenu.cpp
+1742984075 source:c:\sdl2\battlecity\mainmenu.cpp
 	"MainMenu.h"
 	"Game.h"
 
-1742851171 c:\sdl2\battlecity\mainmenu.h
+1742971164 c:\sdl2\battlecity\mainmenu.h
 	<SDL.h>
 	<SDL_ttf.h>
 	<string>
+
+1743003666 source:c:\sdl2\battlecity\bosstank.cpp
+	"BossTank.h"
+	"Game.h"
+
+1742993438 c:\sdl2\battlecity\bosstank.h
+	"Wall.h"
+	<SDL.h>
+	<SDL_mixer.h>
+	<vector>
 

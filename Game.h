@@ -17,6 +17,7 @@
 #include "Bullet.h"
 #include "PlayerTank.h"
 #include "EnemyTank.h"
+#include "BossTank.h"
 
 class Game {
 public:
@@ -34,7 +35,7 @@ public:
     void close();
     void playShootSound();
     void playExplosionSound();
-    void addExplosion(int x, int y);
+    void addExplosion(int x, int y, bool isBoss);
     void updateExplosions();
     void removeWall(int x, int y);
     void loadNextMap();
@@ -56,11 +57,13 @@ private:
     std::vector<std::vector<int>> map;
     std::vector<Wall> walls;
     std::vector<EnemyTank> enemyTanks;
+    std::vector<BossTank> bossTanks;
     struct Explosion{
-        int x, y;
+        int centerX, centerY;
         Uint32 startTime;
         int currentFrame;
-        int currentSize;
+        int currentRadius;
+        int maxRadius;
     };
     std::vector<Explosion> explosions;
     void saveGame(const std::string& filename);
@@ -71,6 +74,8 @@ private:
     void updateBullets();
     void updateEnemies();
     void generateEnemies(int numEnemies);
+    void updateBosses();
+    void generateBosses(int numBosses);
 };
 
 #endif

@@ -14,29 +14,29 @@ void Wall::render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) const {
         if(halfDamaged) {
             switch(damageDirection) {
                 case 0:
-                    srcRect= {1180, 256, 32, 16};
+                    srcRect= {136, 414, 8, 4};
                     break;
                 case 1:
-                    srcRect= {1116, 272, 32, 16};
+                    srcRect= {145, 418, 8, 4};
                     break;
                 case 2:
-                    srcRect= {1148, 256, 16, 32};
+                    srcRect= {154, 414, 4, 8};
                     break;
                 case 3:
-                    srcRect= {1100, 256, 16, 32};
+                    srcRect= {131, 414, 4, 8};
                     break;
                 default:
-                    srcRect= {1052, 288, 32, 32};
+                    srcRect= {118, 414, 8, 8};
                     break;
             }
         } else{
-            srcRect= {1052, 256, 32, 32};
+            srcRect= {118, 414, 8, 8};
         }
     } else if(camouflaged) {
-        srcRect= {1084, 288, 32, 32};
+        srcRect= {136, 423, 8, 8};
         SDL_RenderCopy(renderer, spriteSheet, &srcRect, &rect);
     } else{
-        srcRect= {1052, 288, 32, 32};
+        srcRect= {109, 414, 8, 8};
         SDL_RenderCopy(renderer, spriteSheet, &srcRect, &rect);
     }
     SDL_RenderCopy(renderer, spriteSheet, &srcRect, &rect);

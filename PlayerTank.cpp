@@ -23,38 +23,38 @@ void PlayerTank::render(SDL_Renderer* renderer, SDL_Texture* spriteSheet, bool i
     if(!isOtherPlayer) {
         switch(direction) {
             case 0:
-                srcRect= currentFrame== 0 ? SDL_Rect{522, 7, 55, 55} : SDL_Rect{586, 7, 55, 55};
+                srcRect= currentFrame== 0 ? SDL_Rect{37, 228, 13, 13} : SDL_Rect{37, 245, 13, 13};
                 break;
             case 1:
-                srcRect= currentFrame== 0 ? SDL_Rect{778, 3, 56, 55} : SDL_Rect{842, 3, 56, 55};
+                srcRect= currentFrame== 0 ? SDL_Rect{20, 228, 13, 13} : SDL_Rect{20, 245, 13, 13};
                 break;
             case 2:
-                srcRect= currentFrame== 0 ? SDL_Rect{652, 2, 59, 56} : SDL_Rect{716, 2, 59, 56};
+                srcRect= currentFrame== 0 ? SDL_Rect{52, 228, 13, 13} : SDL_Rect{52, 245, 13, 13};
                 break;
             case 3:
-                srcRect= currentFrame== 0 ? SDL_Rect{905, 3, 54, 55} : SDL_Rect{970, 3, 54, 55};
+                srcRect= currentFrame== 0 ? SDL_Rect{3, 228, 13, 13} : SDL_Rect{3, 245, 13, 13};
                 break;
         }
     } else {
         switch(direction) {
             case 0:
-                srcRect= currentFrame== 0 ? SDL_Rect{2, 3, 56, 60} : SDL_Rect{66, 5, 56, 57};
+                srcRect= currentFrame== 0 ? SDL_Rect{37, 300, 13, 13} : SDL_Rect{37, 317, 13, 13};
                 break;
             case 1:
-                srcRect= currentFrame== 0 ? SDL_Rect{262, 3, 56, 56} : SDL_Rect{325, 1, 58, 58};
+                srcRect= currentFrame== 0 ? SDL_Rect{20, 300, 13, 13} : SDL_Rect{20, 317, 13, 13};
                 break;
             case 2:
-                srcRect= currentFrame== 0 ? SDL_Rect{132, 2, 58, 56} : SDL_Rect{200, 2, 58, 56};
+                srcRect= currentFrame== 0 ? SDL_Rect{52, 300, 13, 13} : SDL_Rect{52, 317, 13, 13};
                 break;
             case 3:
-                srcRect= currentFrame== 0 ? SDL_Rect{390, 2, 57, 56} : SDL_Rect{458, 2, 57, 56};
+                srcRect= currentFrame== 0 ? SDL_Rect{3, 300, 13, 13} : SDL_Rect{3, 317, 13, 13};
                 break;
         }
     }
     SDL_RenderCopy(renderer, spriteSheet, &srcRect, &rect);
 }
 
-void PlayerTank::move(int dx, int dy, const vector<Wall>& walls, const vector<EnemyTank>& enemies, const PlayerTank& otherPlayer) {
+void PlayerTank::move(int dx, int dy, const vector<Wall>& walls, const vector<EnemyTank>& enemies, const vector<BossTank>& bosses, const PlayerTank& otherPlayer) {
     if (!alive) return;
     speed= (boostedMoves> 0) ? baseSpeed* 10 : baseSpeed;
     int newX= rect.x+ dx* speed;
@@ -70,6 +70,13 @@ void PlayerTank::move(int dx, int dy, const vector<Wall>& walls, const vector<En
     for(const EnemyTank& enemy : enemies) {
             SDL_Rect enemyRect= enemy.getRect();
             if(SDL_HasIntersection(&newRect, &enemyRect)) {
+                return;
+            }
+    }
+
+    for(const BossTank& boss : bosses) {
+            SDL_Rect bossRect= boss.getRect();
+            if(SDL_HasIntersection(&newRect, &bossRect)) {
                 return;
             }
     }
@@ -106,7 +113,7 @@ void PlayerTank::shoot(Game &game) {
     switch(direction) {
         case 0:
             bulletX+= rect.w/ 2 - BULLET_SIZE/ 2;
-            bulletY-= BULLET_SIZE+ offset;
+            bulletY-= BULLET_SIZE- offset;
             break;
         case 1:
             bulletX+= rect.w/ 2 - BULLET_SIZE/ 2;
@@ -122,7 +129,7 @@ void PlayerTank::shoot(Game &game) {
             break;
     }
 
-    bullets.emplace_back(bulletX, bulletY, direction, true);
+    bullets.emplace_back(bulletX, bulletY, direction, true, false);
     game.playShootSound();
 }
 

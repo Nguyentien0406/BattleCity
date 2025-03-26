@@ -3,18 +3,34 @@
 
 using namespace std;
 
-MainMenu::MainMenu(SDL_Renderer* renderer) : renderer(renderer),fontTitle(nullptr), fontMenu(nullptr), selectedOption(0) {
-    fontTitle = TTF_OpenFont("Font/Font1.ttf", 64);
+MainMenu::MainMenu(SDL_Renderer* renderer) : renderer(renderer), fontMenu(nullptr), selectedOption(0) {
     fontMenu = TTF_OpenFont("Font/Font1.ttf", 30);
-    if (!fontTitle || !fontMenu) {
+    if (!fontMenu) {
         cerr << "Failed to load fonts: " << TTF_GetError() << endl;
         throw runtime_error("Font initialization failed");
     }
+    SDL_Surface* surface = IMG_Load("C:\\SDL2\\BattleCity\\Ảnh\\assets.png");
+    if (!surface) {
+        cerr << "Failed to load title image: " << IMG_GetError() << endl;
+        throw runtime_error("Image loading failed");
+    }
+    SDL_Rect srcRect = {28, 40, 188, 68};
+    SDL_Surface* cropped = SDL_CreateRGBSurface(0, srcRect.w, srcRect.h, 32, 0, 0, 0, 0);
+    SDL_BlitSurface(surface, &srcRect, cropped, NULL);
+
+    titleTexture = SDL_CreateTextureFromSurface(renderer, cropped);
+    titleRect.w = srcRect.w * 3;
+    titleRect.h = srcRect.h * 3;
+    titleRect.x = (SCREEN_WIDTH - titleRect.w) / 2;
+    titleRect.y = 80;
+
+    SDL_FreeSurface(cropped);
+    SDL_FreeSurface(surface);
 }
 
 MainMenu::~MainMenu() {
-    if (fontTitle) TTF_CloseFont(fontTitle);
     if (fontMenu) TTF_CloseFont(fontMenu);
+    if (titleTexture) SDL_DestroyTexture(titleTexture);
 }
 
 MainMenu::MenuAction MainMenu::ShowMenu(bool saveFile) {
@@ -34,19 +50,21 @@ MainMenu::MenuAction MainMenu::ShowMenu(bool saveFile) {
 void MainMenu::RenderMenu(bool saveFile) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
+    if (titleTexture) {
+        SDL_RenderCopy(renderer, titleTexture, nullptr, &titleRect);
+    }
+    Uint32 ticks = SDL_GetTicks();
+    bool isBlinking = (ticks / 500) % 2;
     SDL_Color white = {255, 255, 255, 255};
-    SDL_Surface* titleSurface = TTF_RenderText_Solid(fontTitle, "BATTLE CITY", white);
-    SDL_Texture* titleTexture = SDL_CreateTextureFromSurface(renderer, titleSurface);
-    SDL_Rect titleRect = {(SCREEN_WIDTH - titleSurface->w)/2, 150, titleSurface->w, titleSurface->h};
-    SDL_RenderCopy(renderer, titleTexture, nullptr, &titleRect);
     SDL_Color red = {255, 0, 0, 255};
-    SDL_Color startColor = (selectedOption == 0) ? red : white;
+    SDL_Color blinkColor = isBlinking ? red : white;
+    SDL_Color startColor = (selectedOption == 0) ? blinkColor : white;
     SDL_Surface* startSurface = TTF_RenderText_Solid(fontMenu, "START", startColor);
     SDL_Texture* startTexture = SDL_CreateTextureFromSurface(renderer, startSurface);
-    SDL_Rect startRect = {(SCREEN_WIDTH - startSurface->w)/2, 330, startSurface->w, startSurface->h};
+    SDL_Rect startRect = {(SCREEN_WIDTH - startSurface->w)/2, 350, startSurface->w, startSurface->h};
     SDL_RenderCopy(renderer, startTexture, nullptr, &startRect);
     if (saveFile) {
-        SDL_Color continueColor = (selectedOption == 1) ? red : white;
+        SDL_Color continueColor = (selectedOption == 1) ? blinkColor : white;
         SDL_Surface* continueSurface = TTF_RenderText_Solid(fontMenu, "CONTINUE", continueColor);
         SDL_Texture* continueTexture = SDL_CreateTextureFromSurface(renderer, continueSurface);
         SDL_Rect continueRect = {(SCREEN_WIDTH - continueSurface->w)/2, 400, continueSurface->w, continueSurface->h};
@@ -54,15 +72,12 @@ void MainMenu::RenderMenu(bool saveFile) {
         SDL_FreeSurface(continueSurface);
         SDL_DestroyTexture(continueTexture);
     }
-    SDL_FreeSurface(titleSurface);
     SDL_FreeSurface(startSurface);
-    SDL_DestroyTexture(titleTexture);
     SDL_DestroyTexture(startTexture);
-
     SDL_RenderPresent(renderer);
 }
 
-void MainMenu::HandleInput(bool& menuRunning, bool hasSaveFile) {
+void MainMenu::HandleInput(bool& menuRunning, bool saveFile) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT ||
@@ -74,7 +89,7 @@ void MainMenu::HandleInput(bool& menuRunning, bool hasSaveFile) {
             switch (event.key.keysym.sym) {
                 case SDLK_UP:
                 case SDLK_DOWN:
-                    if (hasSaveFile) selectedOption = 1 - selectedOption;
+                    if (saveFile) selectedOption = 1 - selectedOption;
                     break;
                 case SDLK_RETURN:
                     menuRunning = false;

@@ -1,6 +1,5 @@
-#ifndef ENEMYTANK_H
-#define ENEMYTANK_H
-
+#ifndef BOSSTANK_H
+#define BOSSTANK_H
 #include "Wall.h"
 #include <SDL.h>
 #include <SDL_mixer.h>
@@ -8,17 +7,17 @@
 class Bullet;
 class PlayerTank;
 class Game;
-class BossTank;
+class EnemyTank;
 
-class EnemyTank {
+class BossTank {
 public:
-    EnemyTank(int x, int y);
-    ~EnemyTank() {}
+    BossTank(int x, int y);
+    ~BossTank() {}
 
     void render(SDL_Renderer* renderer, SDL_Texture* spriteSheet);
-    void move(const std::vector<Wall>& walls, const PlayerTank& player, const PlayerTank& otherPlayer, const std::vector<EnemyTank>& enemies, const std::vector<class BossTank>& bosses);
+    void move(const std::vector<Wall>& walls, const PlayerTank& player, const PlayerTank& otherPlayer, const std::vector<EnemyTank>& enemies, const std::vector<BossTank>& bosses);
     void shoot();
-    void updateBullets(std::vector<Wall>& walls, PlayerTank& player, PlayerTank& otherPlayer, std::vector<EnemyTank>& enemies,std::vector<class BossTank>& bosses,Game &game);
+    void updateBullets(std::vector<Wall>& walls, PlayerTank& player, PlayerTank& otherPlayer, std::vector<EnemyTank>& enemies, std::vector<BossTank>& bosses,Game &game);
 
     std::vector<Bullet>& getBullets();
     const SDL_Rect getRect() const;

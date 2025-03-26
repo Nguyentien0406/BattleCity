@@ -8,7 +8,7 @@
 const int SCREEN_WIDTH= 800;
 const int SCREEN_HEIGHT= 600;
 const int TILE_SIZE= 40;
-const int BULLET_SIZE= 10;
+const int BULLET_SIZE= 7;
 const int BULLET_SPEED= 10;
 
 class Wall {

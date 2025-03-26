@@ -14,7 +14,8 @@ public:
 
 private:
     SDL_Renderer* renderer;
-    TTF_Font* fontTitle;
+    SDL_Texture* titleTexture;
+    SDL_Rect titleRect;
     TTF_Font* fontMenu;
     int selectedOption;
     void RenderMenu(bool saveFile);

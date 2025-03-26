@@ -8,6 +8,7 @@
 class Bullet;
 class EnemyTank;
 class Game;
+class BossTank;
 
 class PlayerTank {
 public:
@@ -15,7 +16,7 @@ public:
     ~PlayerTank() {}
 
     void render(SDL_Renderer* renderer, SDL_Texture* spriteSheet, bool isOtherPlayer);
-    void move(int dx, int dy, const std::vector<class Wall>& walls, const std::vector<class EnemyTank>& enemies, const PlayerTank& otherPlayer);
+    void move(int dx, int dy, const std::vector<class Wall>& walls, const std::vector<class EnemyTank>& enemies, const std::vector<class BossTank>& bosses, const PlayerTank& otherPlayer);
     void shoot(Game &game);
 
     std::vector<Bullet>& getBullets();
