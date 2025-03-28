@@ -69,8 +69,9 @@
 	"EnemyTank.h"
 	"BossTank.h"
 
-1743004439 source:c:\sdl2\battlecity\game.cpp
+1743176108 source:c:\sdl2\battlecity\game.cpp
 	"Game.h"
+	"ModeSelection.h"
 	"MainMenu.h"
 	<SDL.h>
 	<SDL_mixer.h>
@@ -95,4 +96,14 @@
 	<SDL.h>
 	<SDL_mixer.h>
 	<vector>
+
+1743175432 c:\sdl2\battlecity\modeselection.h
+	<SDL.h>
+	<SDL_ttf.h>
+
+1743175997 source:c:\sdl2\battlecity\modeselection.cpp
+	"ModeSelection.h"
+	<iostream>
+	<SDL_image.h>
+	"Game.h"
 

@@ -43,6 +43,8 @@
 		<Unit filename="Game.h" />
 		<Unit filename="MainMenu.cpp" />
 		<Unit filename="MainMenu.h" />
+		<Unit filename="ModeSelection.cpp" />
+		<Unit filename="ModeSelection.h" />
 		<Unit filename="PlayerTank.cpp" />
 		<Unit filename="PlayerTank.h" />
 		<Unit filename="Wall.cpp" />

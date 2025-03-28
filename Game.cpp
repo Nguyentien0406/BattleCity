@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "ModeSelection.h"
 #include "MainMenu.h"
 #include <SDL.h>
 #include <SDL_mixer.h>
@@ -207,19 +208,27 @@ void Game::render() {
 
 void Game::run() {
     while(true) {
+        running= true;
         MainMenu menu(renderer);
         switch(menu.ShowMenu(isFileValid("Save/Save1.txt"))) {
-            case MainMenu::START_GAME:
+            case MainMenu::START_GAME: {
+                ModeSelection modeSelection(renderer);
+                ModeSelection::Mode selectedMode = modeSelection.ShowSelection();
+                if (selectedMode == ModeSelection::BACK) {
+                    running= false;
+                    break;
+                }
                 if (isFileValid("Save/Save1.txt")) {
                     remove("Save/Save1.txt");
                 }
                 currentMap = 1;
-                player.setAlive(true);
                 otherPlayer.setAlive(true);
+                player.setAlive(selectedMode== ModeSelection::TWO_PLAYERS);
                 gameOver = false;
                 gameWin = false;
                 loadNextMap();
                 break;
+            }
             case MainMenu::CONTINUE_GAME:
                 break;
             case MainMenu::EXIT_GAME:
@@ -228,7 +237,6 @@ void Game::run() {
         if(isFileValid("Save/Save1.txt")) {
             loadGame("Save/Save1.txt");
         }
-        running= true;
         while(running) {
             if(player.isAlive()) {
                 if(player.getIsMoving()) {
