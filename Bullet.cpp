@@ -137,6 +137,31 @@ void Bullet::update(vector<Wall>& walls, PlayerTank& player, PlayerTank& otherPl
         }
     }
 
+    if(isFromPlayer) {
+        for(auto& enemy : enemies) {
+            vector<Bullet>& enemyBullets= enemy.getBullets();
+            for(auto& enemyBullet : enemyBullets) {
+                SDL_Rect enemyBulletRect= enemyBullet.getRect();
+                if(SDL_HasIntersection(&rect, &enemyBulletRect)) {
+                    collided= true;
+                    enemyBullet.setCollided(true);
+                    break;
+                }
+            }
+        }
+
+        for(auto& boss : bosses) {
+            vector<Bullet>& bossBullets= boss.getBullets();
+                for(auto& bossBullet : bossBullets) {
+                    SDL_Rect bossBulletRect= bossBullet.getRect();
+                    if(SDL_HasIntersection(&rect, &bossBulletRect)) {
+                        collided= true;
+                        break;
+                    }
+                }
+        }
+    }
+
     if(rect.x<= TILE_SIZE|| rect.x+ BULLET_SIZE>= SCREEN_WIDTH- TILE_SIZE ||
         rect.y<= TILE_SIZE|| rect.y+ BULLET_SIZE>= SCREEN_HEIGHT- TILE_SIZE) {
         collided= true;

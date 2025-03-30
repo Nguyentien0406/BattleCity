@@ -17,6 +17,7 @@ public:
 
     void render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) const;
     void update(std::vector<Wall>& walls, PlayerTank& player, PlayerTank& otherPlayer, std::vector<EnemyTank>& enemies, std::vector<BossTank>& bosses, Game& game);
+    void setCollided(bool status) { collided = status; }
     bool hasCollided() const;
     const SDL_Rect getRect() const { return rect; }
     int getDirection() const { return direction; }
