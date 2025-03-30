@@ -1,0 +1,106 @@
+# depslib dependency file v1.0
+1743337144 source:c:\sdl2\battlecity\code\bosstank.cpp
+	"BossTank.h"
+	"Game.h"
+
+1742993438 c:\sdl2\battlecity\code\bosstank.h
+	"Wall.h"
+	<SDL.h>
+	<SDL_mixer.h>
+	<vector>
+
+1743317428 c:\sdl2\battlecity\code\wall.h
+	"Game.h"
+	<SDL.h>
+	<vector>
+
+1743331345 c:\sdl2\battlecity\code\game.h
+	<SDL.h>
+	<SDL_mixer.h>
+	<SDL_image.h>
+	<vector>
+	<iostream>
+	<algorithm>
+	<cstdlib>
+	<ctime>
+	<fstream>
+	<sstream>
+	<cstdio>
+	<string>
+	"Wall.h"
+	"Bullet.h"
+	"PlayerTank.h"
+	"EnemyTank.h"
+	"BossTank.h"
+
+1743315402 c:\sdl2\battlecity\code\bullet.h
+	"Game.h"
+	"Wall.h"
+	"PlayerTank.h"
+	"EnemyTank.h"
+	"BossTank.h"
+	<SDL.h>
+	<SDL_mixer.h>
+	<vector>
+
+1743337872 c:\sdl2\battlecity\code\playertank.h
+	"Wall.h"
+	<SDL.h>
+	<SDL_mixer.h>
+	<vector>
+
+1742993309 c:\sdl2\battlecity\code\enemytank.h
+	"Wall.h"
+	<SDL.h>
+	<SDL_mixer.h>
+	<vector>
+
+1743317139 source:c:\sdl2\battlecity\code\bullet.cpp
+	"Bullet.h"
+	"Game.h"
+
+1743337144 source:c:\sdl2\battlecity\code\enemytank.cpp
+	"EnemyTank.h"
+	"Game.h"
+
+1743331337 source:c:\sdl2\battlecity\code\game.cpp
+	"Game.h"
+	"ModeSelection.h"
+	"MainMenu.h"
+	<SDL.h>
+	<SDL_mixer.h>
+	<SDL_image.h>
+	<SDL_ttf.h>
+
+1743175432 c:\sdl2\battlecity\code\modeselection.h
+	<SDL.h>
+	<SDL_ttf.h>
+
+1742971164 c:\sdl2\battlecity\code\mainmenu.h
+	<SDL.h>
+	<SDL_ttf.h>
+	<string>
+
+1742834894 source:c:\sdl2\battlecity\code\main.cpp
+	"Game.h"
+	<SDL_mixer.h>
+
+1742984075 source:c:\sdl2\battlecity\code\mainmenu.cpp
+	"MainMenu.h"
+	"Game.h"
+
+1743175997 source:c:\sdl2\battlecity\code\modeselection.cpp
+	"ModeSelection.h"
+	<iostream>
+	<SDL_image.h>
+	"Game.h"
+
+1743337872 source:c:\sdl2\battlecity\code\playertank.cpp
+	"Game.h"
+	"PlayerTank.h"
+	<iostream>
+
+1743068602 source:c:\sdl2\battlecity\code\wall.cpp
+	"Wall.h"
+	"Game.h"
+
