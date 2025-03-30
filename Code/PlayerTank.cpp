@@ -4,8 +4,8 @@
 
 using namespace std;
 
-PlayerTank::PlayerTank(int x, int y) : speed(1), baseSpeed(1), direction(0), health(3), currentFrame(0),
- lastFrameTime(SDL_GetTicks()), isMoving(false), boostedMoves(0), alive(true) {
+PlayerTank::PlayerTank(int x, int y) : speed(1), baseSpeed(1), direction(0), health(3), currentFrame(0), lastFrameTime(SDL_GetTicks()),
+ isMoving(false), boostedMoves(0), alive(true), shootCooldown(500), lastShotTime(SDL_GetTicks()) {
     rect.x= x;
     rect.y= y;
     rect.w= TILE_SIZE;
@@ -106,6 +106,11 @@ void PlayerTank::move(int dx, int dy, const vector<Wall>& walls, const vector<En
 
 void PlayerTank::shoot(Game &game) {
     if (!alive) return;
+    Uint32 currentTime = SDL_GetTicks();
+    if (currentTime - lastShotTime < shootCooldown) {
+        return;
+    }
+    lastShotTime = currentTime;
     int bulletX= rect.x;
     int bulletY= rect.y;
     int offset= 10;

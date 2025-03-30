@@ -1,16 +1,16 @@
-#include "EnemyTank.h"
+#include "BossTank.h"
 #include "Game.h"
 using namespace std;
 
-EnemyTank::EnemyTank(int x, int y) : speed(1), direction(rand() % 4), health(3), currentFrame(0),
- lastFrameTime(SDL_GetTicks()), isMoving(true), shootCooldown(0), changeDirectionCooldown(0) {
+BossTank::BossTank(int x, int y) : speed(1), direction(rand() % 4), health(20), currentFrame(0),
+ lastFrameTime(SDL_GetTicks()), isMoving(true), shootCooldown(160), changeDirectionCooldown(0) {
     rect.x= x;
     rect.y= y;
-    rect.w= TILE_SIZE;
-    rect.h= TILE_SIZE;
+    rect.w= TILE_SIZE* 2;
+    rect.h= TILE_SIZE* 2;
 }
 
-void EnemyTank::render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) {
+void BossTank::render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) {
     SDL_Rect srcRect;
     Uint32 currentTime= SDL_GetTicks();
     if(currentTime- lastFrameTime> 10&& isMoving) {
@@ -19,22 +19,22 @@ void EnemyTank::render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) {
     }
     switch(direction) {
         case 0:
-            srcRect= currentFrame== 0 ? SDL_Rect{110, 262, 13, 15} : SDL_Rect{110, 279, 13, 15};
+            srcRect= currentFrame== 0 ? SDL_Rect{110, 228, 13, 15} : SDL_Rect{110, 245, 13, 15};
             break;
         case 1:
-            srcRect= currentFrame== 0 ? SDL_Rect{95, 279, 13, 15} : SDL_Rect{95, 262, 13, 15};
+            srcRect= currentFrame== 0 ? SDL_Rect{95, 228, 13, 15} : SDL_Rect{95, 245, 13, 15};
             break;
         case 2:
-            srcRect= currentFrame== 0 ? SDL_Rect{125, 262, 15, 13} : SDL_Rect{125, 279, 15, 13};
+            srcRect= currentFrame== 0 ? SDL_Rect{125, 228, 15, 13} : SDL_Rect{125, 245, 15, 13};
             break;
         case 3:
-            srcRect= currentFrame== 0 ? SDL_Rect{78, 262, 15, 13} : SDL_Rect{78, 279, 15, 13};
+            srcRect= currentFrame== 0 ? SDL_Rect{78, 228, 15, 13} : SDL_Rect{78, 245, 15, 13};
             break;
     }
     SDL_RenderCopy(renderer, spriteSheet, &srcRect, &rect);
 }
 
-void EnemyTank::move(const vector<Wall>& walls, const PlayerTank& player, const PlayerTank& otherPlayer, const vector<EnemyTank>& enemies, const vector<class BossTank>& bosses) {
+void BossTank::move(const vector<Wall>& walls, const PlayerTank& player, const PlayerTank& otherPlayer, const vector<EnemyTank>& enemies, const vector<BossTank>& bosses) {
     if(changeDirectionCooldown<= 0) {
         int newDirection;
         do{
@@ -85,18 +85,7 @@ void EnemyTank::move(const vector<Wall>& walls, const PlayerTank& player, const 
     }
 
     for(const EnemyTank& enemy : enemies) {
-        if(&enemy!= this) {
-            SDL_Rect enemyRect= enemy.getRect();
-            if(SDL_HasIntersection(&newRect, &enemyRect)) {
-                isMoving= false;
-                direction= rand() % 4;
-                return;
-            }
-        }
-    }
-
-    for(const BossTank& boss : bosses) {
-        SDL_Rect enemyRect= boss.getRect();
+        SDL_Rect enemyRect= enemy.getRect();
         if(SDL_HasIntersection(&newRect, &enemyRect)) {
             isMoving= false;
             direction= rand() % 4;
@@ -104,8 +93,19 @@ void EnemyTank::move(const vector<Wall>& walls, const PlayerTank& player, const 
         }
     }
 
-    if(newX< TILE_SIZE || newX> SCREEN_WIDTH- TILE_SIZE- TILE_SIZE ||
-        newY< TILE_SIZE || newY> SCREEN_HEIGHT- TILE_SIZE- TILE_SIZE) {
+    for(const BossTank& boss : bosses) {
+        if(&boss!= this) {
+            SDL_Rect bossRect= boss.getRect();
+            if(SDL_HasIntersection(&newRect, &bossRect)) {
+                isMoving= false;
+                direction= rand() % 4;
+                return;
+            }
+        }
+    }
+
+    if(newX< TILE_SIZE || newX+ rect.w> SCREEN_WIDTH- TILE_SIZE ||
+        newY< TILE_SIZE || newY+ rect.h> SCREEN_HEIGHT- TILE_SIZE) {
         isMoving= false;
         direction= rand() % 4;
         return;
@@ -116,7 +116,7 @@ void EnemyTank::move(const vector<Wall>& walls, const PlayerTank& player, const 
     rect.y= newY;
 }
 
-void EnemyTank::shoot() {
+void BossTank::shoot() {
     if(shootCooldown > 0) {
         shootCooldown--;
         return;
@@ -124,32 +124,31 @@ void EnemyTank::shoot() {
 
     int bulletX= rect.x;
     int bulletY= rect.y;
-    int offset= 10;
 
     switch(direction) {
         case 0:
-            bulletX+= rect.w/ 2 - BULLET_SIZE/ 2;
-            bulletY-= BULLET_SIZE- offset;
+            bulletX+= rect.w/ 2 - BULLET_SIZE/ 2 -2;
+            bulletY-= BULLET_SIZE;
             break;
         case 1:
-            bulletX+= rect.w/ 2 - BULLET_SIZE/ 2;
-            bulletY+= rect.h- offset;
+            bulletX+= rect.w/ 2 - BULLET_SIZE/ 2 -2;
+            bulletY+= rect.h;
             break;
         case 2:
-            bulletX-= BULLET_SIZE- offset;
-            bulletY+= rect.h/ 2 - BULLET_SIZE/ 2;
+            bulletX-= BULLET_SIZE;
+            bulletY+= rect.h/ 2 - BULLET_SIZE/ 2 -2;
             break;
         case 3:
-            bulletX+= rect.w- offset;
-            bulletY+= rect.h/ 2 - BULLET_SIZE/ 2;
+            bulletX+= rect.w;
+            bulletY+= rect.h/ 2 - BULLET_SIZE/ 2 -2;
             break;
     }
 
-    bullets.emplace_back(bulletX, bulletY, direction, false, false);
-    shootCooldown= 40+ (rand()% 40);
+    bullets.emplace_back(bulletX, bulletY, direction, false, true);
+    shootCooldown= 160+ (rand()% 160);
 }
 
-void EnemyTank::updateBullets(vector<Wall>& walls, PlayerTank& player, PlayerTank& otherPlayer, vector<EnemyTank>& enemies, vector<BossTank>& bosses, Game &game) {
+void BossTank::updateBullets(vector<Wall>& walls, PlayerTank& player, PlayerTank& otherPlayer, vector<EnemyTank>& enemies, vector<BossTank>& bosses, Game &game) {
     for (Bullet& bullet : bullets) {
         bullet.update(walls, player, otherPlayer, enemies, bosses, game);
     }
@@ -159,17 +158,17 @@ void EnemyTank::updateBullets(vector<Wall>& walls, PlayerTank& player, PlayerTan
         bullets.end());
 }
 
-vector<Bullet>& EnemyTank::getBullets() {
+vector<Bullet>& BossTank::getBullets() {
     return bullets;
 }
 
-const SDL_Rect EnemyTank::getRect() const {
+const SDL_Rect BossTank::getRect() const {
     return rect;
 }
 
-void EnemyTank::takeDamage() {
+void BossTank::takeDamage() {
     health--;
 }
-bool EnemyTank::isDestroyed() const {
+bool BossTank::isDestroyed() const {
     return health <= 0;
 }

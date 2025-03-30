@@ -57,6 +57,8 @@ private:
     int boostedMoves;
     std::vector<Bullet> bullets;
     bool alive;
+    Uint32 shootCooldown;
+    Uint32 lastShotTime;
 };
 
 #endif
