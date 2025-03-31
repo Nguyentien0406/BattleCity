@@ -13,10 +13,12 @@ EnemyTank::EnemyTank(int x, int y) : speed(1), direction(rand() % 4), health(3),
 void EnemyTank::render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) {
     SDL_Rect srcRect;
     Uint32 currentTime= SDL_GetTicks();
+    // Cập nhật frame animation nếu đang di chuyển
     if(currentTime- lastFrameTime> 10&& isMoving) {
         currentFrame= 1 - currentFrame;
         lastFrameTime= currentTime;
     }
+    // Chọn sprite tương ứng với hướng và frame hiện tại
     switch(direction) {
         case 0:
             srcRect= currentFrame== 0 ? SDL_Rect{110, 262, 13, 15} : SDL_Rect{110, 279, 13, 15};
@@ -35,6 +37,7 @@ void EnemyTank::render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) {
 }
  // Di chuyển AI
 void EnemyTank::move(const vector<Wall>& walls, const PlayerTank& player, const PlayerTank& otherPlayer, const vector<EnemyTank>& enemies, const vector<class BossTank>& bosses) {
+    // Đổi hướng nếu hết thời gian chờ
     if(changeDirectionCooldown<= 0) {
         int newDirection;
         do{
@@ -45,7 +48,7 @@ void EnemyTank::move(const vector<Wall>& walls, const PlayerTank& player, const 
     } else{
         changeDirectionCooldown--;
     }
-
+    // Tính toán vị trí mới
     int dx= 0, dy= 0;
     switch(direction) {
         case 0: dy= -1; break;
@@ -57,7 +60,7 @@ void EnemyTank::move(const vector<Wall>& walls, const PlayerTank& player, const 
     int newX= rect.x+ dx* speed;
     int newY= rect.y+ dy* speed;
     SDL_Rect newRect= {newX, newY, rect.w, rect.h};
-
+    // Kiểm tra va chạm với tường
     for(const Wall& wall : walls) {
         if(SDL_HasIntersection(&newRect, &wall.getRect())) {
             isMoving= false;
@@ -65,7 +68,7 @@ void EnemyTank::move(const vector<Wall>& walls, const PlayerTank& player, const 
             return;
         }
     }
-
+    // Kiểm tra va chạm với người chơi 2
     if(player.isAlive()) {
         SDL_Rect playerRect= player.getRect();
         if(SDL_HasIntersection(&newRect, &playerRect)) {
@@ -74,7 +77,7 @@ void EnemyTank::move(const vector<Wall>& walls, const PlayerTank& player, const 
             return;
         }
     }
-
+    // Kiểm tra va chạm với người chơi 1
     if(otherPlayer.isAlive()) {
         SDL_Rect otherPlayerRect= otherPlayer.getRect();
         if(SDL_HasIntersection(&newRect, &otherPlayerRect)) {
@@ -83,7 +86,7 @@ void EnemyTank::move(const vector<Wall>& walls, const PlayerTank& player, const 
             return;
         }
     }
-
+    // Kiểm tra va chạm với xe tăng địch khác
     for(const EnemyTank& enemy : enemies) {
         if(&enemy!= this) {
             SDL_Rect enemyRect= enemy.getRect();
@@ -94,7 +97,7 @@ void EnemyTank::move(const vector<Wall>& walls, const PlayerTank& player, const 
             }
         }
     }
-
+    // Kiểm tra va chạm với boss khác
     for(const BossTank& boss : bosses) {
         SDL_Rect enemyRect= boss.getRect();
         if(SDL_HasIntersection(&newRect, &enemyRect)) {
@@ -103,7 +106,7 @@ void EnemyTank::move(const vector<Wall>& walls, const PlayerTank& player, const 
             return;
         }
     }
-
+    // Kiểm tra có ra khỏi biên màn hình không
     if(newX< TILE_SIZE || newX> SCREEN_WIDTH- TILE_SIZE- TILE_SIZE ||
         newY< TILE_SIZE || newY> SCREEN_HEIGHT- TILE_SIZE- TILE_SIZE) {
         isMoving= false;
@@ -118,6 +121,7 @@ void EnemyTank::move(const vector<Wall>& walls, const PlayerTank& player, const 
  // Bắn đạn
 void EnemyTank::shoot() {
     Uint32 currentTime = SDL_GetTicks();
+    // Kiểm tra thời gian chờ
     if (currentTime - lastShotTime < shootCooldown) {
         return;
     }
@@ -125,7 +129,7 @@ void EnemyTank::shoot() {
     int bulletX= rect.x;
     int bulletY= rect.y;
     int offset= 10;
-
+    // Tính toán vị trí bắn đạn dựa trên hướng
     switch(direction) {
         case 0:
             bulletX+= rect.w/ 2 - BULLET_SIZE/ 2;

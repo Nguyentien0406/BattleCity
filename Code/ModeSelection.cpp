@@ -6,11 +6,13 @@
 using namespace std;
  // Khởi tạo với renderer
 ModeSelection::ModeSelection(SDL_Renderer* renderer) : renderer(renderer), titleTexture(nullptr), selectedOption(0) {
+    // Tải font
     font= TTF_OpenFont("Font/Font1.ttf", 30);
     if(!font) {
         cerr << "Failed to load font: " << TTF_GetError() << endl;
         throw runtime_error("Font initialization failed");
     }
+    // Tải hình ảnh tiêu đề
     SDL_Surface* surface = IMG_Load("C:\\SDL2\\BattleCity\\Ảnh\\assets.png");
     if (!surface) {
         cerr << "Failed to load title image: " << IMG_GetError() << endl;
@@ -39,6 +41,7 @@ ModeSelection::~ModeSelection() {
 ModeSelection::Mode ModeSelection::ShowSelection() {
     bool selectionRunning = true;
     Mode action = BACK;
+    // Vòng lặp chính
     while(selectionRunning) {
         HandleInput(selectionRunning);
         if(!selectionRunning) {
@@ -56,27 +59,29 @@ void ModeSelection::RenderSelection() {
     if (titleTexture) {
         SDL_RenderCopy(renderer, titleTexture, nullptr, &titleRect);
     }
+    // Hiệu ứng nhấp nháy
     Uint32 ticks = SDL_GetTicks();
     bool isBlinking = (ticks / 500) % 2;
     SDL_Color white = {255, 255, 255, 255};
     SDL_Color red = {255, 0, 0, 255};
-
     SDL_Color color1 = (selectedOption == 0) ? (isBlinking ? red : white) : white;
     SDL_Color color2 = (selectedOption == 1) ? (isBlinking ? red : white) : white;
-
+    // Vẽ option 1 PLAYER
     SDL_Surface* option1Surface = TTF_RenderText_Solid(font, "1 PLAYER", color1);
     SDL_Texture* option1Texture = SDL_CreateTextureFromSurface(renderer, option1Surface);
     SDL_Rect option1Rect = {(SCREEN_WIDTH - option1Surface->w)/2, 350, option1Surface->w, option1Surface->h};
+    // Vẽ option 2 PLAYERS
     SDL_Surface* option2Surface = TTF_RenderText_Solid(font, "2 PLAYERS", color2);
     SDL_Texture* option2Texture = SDL_CreateTextureFromSurface(renderer, option2Surface);
     SDL_Rect option2Rect = {(SCREEN_WIDTH - option2Surface->w)/2, 400, option2Surface->w, option2Surface->h};
+    // Hiển thị các option
     SDL_RenderCopy(renderer, option1Texture, nullptr, &option1Rect);
     SDL_RenderCopy(renderer, option2Texture, nullptr, &option2Rect);
+    // Giải phóng bộ nhớ
     SDL_FreeSurface(option1Surface);
     SDL_DestroyTexture(option1Texture);
     SDL_FreeSurface(option2Surface);
     SDL_DestroyTexture(option2Texture);
-
     SDL_RenderPresent(renderer);
 }
  // Xử lý đầu vào

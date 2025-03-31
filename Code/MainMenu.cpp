@@ -4,11 +4,13 @@
 using namespace std;
  // Hàm khởi tạo, nhận renderer từ SDL
 MainMenu::MainMenu(SDL_Renderer* renderer) : renderer(renderer), fontMenu(nullptr), selectedOption(0) {
+    // Tải font cho menu
     fontMenu = TTF_OpenFont("Font/Font1.ttf", 30);
     if (!fontMenu) {
         cerr << "Failed to load fonts: " << TTF_GetError() << endl;
         throw runtime_error("Font initialization failed");
     }
+    // Tải và xử lý hình ảnh tiêu đề
     SDL_Surface* surface = IMG_Load("C:\\SDL2\\BattleCity\\Ảnh\\assets.png");
     if (!surface) {
         cerr << "Failed to load title image: " << IMG_GetError() << endl;
@@ -23,7 +25,7 @@ MainMenu::MainMenu(SDL_Renderer* renderer) : renderer(renderer), fontMenu(nullpt
     titleRect.h = srcRect.h * 3;
     titleRect.x = (SCREEN_WIDTH - titleRect.w) / 2;
     titleRect.y = 80;
-
+    // Giải phóng bộ nhớ
     SDL_FreeSurface(cropped);
     SDL_FreeSurface(surface);
 }
@@ -36,6 +38,7 @@ MainMenu::~MainMenu() {
 MainMenu::MenuAction MainMenu::ShowMenu(bool saveFile) {
     bool menuRunning = true;
     MenuAction action = EXIT_GAME;
+    // Vòng lặp chính của menu
     while (menuRunning) {
         HandleInput(menuRunning, saveFile);
         if (!menuRunning) {
@@ -53,16 +56,19 @@ void MainMenu::RenderMenu(bool saveFile) {
     if (titleTexture) {
         SDL_RenderCopy(renderer, titleTexture, nullptr, &titleRect);
     }
+    // Hiệu ứng nhấp nháy cho lựa chọn hiện tại
     Uint32 ticks = SDL_GetTicks();
     bool isBlinking = (ticks / 500) % 2;
     SDL_Color white = {255, 255, 255, 255};
     SDL_Color red = {255, 0, 0, 255};
     SDL_Color blinkColor = isBlinking ? red : white;
+    // Vẽ nút START
     SDL_Color startColor = (selectedOption == 0) ? blinkColor : white;
     SDL_Surface* startSurface = TTF_RenderText_Solid(fontMenu, "START", startColor);
     SDL_Texture* startTexture = SDL_CreateTextureFromSurface(renderer, startSurface);
     SDL_Rect startRect = {(SCREEN_WIDTH - startSurface->w)/2, 350, startSurface->w, startSurface->h};
     SDL_RenderCopy(renderer, startTexture, nullptr, &startRect);
+    // Vẽ nút CONTINUE nếu có file save
     if (saveFile) {
         SDL_Color continueColor = (selectedOption == 1) ? blinkColor : white;
         SDL_Surface* continueSurface = TTF_RenderText_Solid(fontMenu, "CONTINUE", continueColor);
@@ -73,6 +79,7 @@ void MainMenu::RenderMenu(bool saveFile) {
         SDL_DestroyTexture(continueTexture);
     }
     SDL_FreeSurface(startSurface);
+    // Giải phóng bộ nhớ
     SDL_DestroyTexture(startTexture);
     SDL_RenderPresent(renderer);
 }
@@ -80,11 +87,13 @@ void MainMenu::RenderMenu(bool saveFile) {
 void MainMenu::HandleInput(bool& menuRunning, bool saveFile) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
+        // Thoát game nếu nhấn nút đóng cửa sổ hoặc ESC
         if (event.type == SDL_QUIT ||
            (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) {
             menuRunning = false;
             exit(0);
         }
+        // Xử lý phím điều hướng
         if (event.type == SDL_KEYDOWN) {
             switch (event.key.keysym.sym) {
                 case SDLK_UP:

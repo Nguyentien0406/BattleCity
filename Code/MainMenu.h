@@ -7,7 +7,7 @@
 
 class MainMenu {
 public:
-    enum MenuAction { START_GAME, CONTINUE_GAME, EXIT_GAME };
+    enum MenuAction { START_GAME, CONTINUE_GAME, EXIT_GAME };   // Các hành động có thể chọn trong menu
     MainMenu(SDL_Renderer* renderer);
     ~MainMenu();
     MenuAction ShowMenu(bool saveFile);

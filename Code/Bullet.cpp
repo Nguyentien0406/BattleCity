@@ -35,7 +35,8 @@ void Bullet::render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) const{
 }
 // Cập nhật trạng thái đạn và xử lý va chạm
 void Bullet::update(vector<Wall>& walls, PlayerTank& player, PlayerTank& otherPlayer, vector<EnemyTank>& enemies, vector<BossTank>& bosses, Game& game) {
-    switch(direction) {  // Di chuyển đạn theo hướng
+    // Di chuyển đạn theo hướng
+    switch(direction) {
         case 0: rect.y-= speed; break;
         case 1: rect.y+= speed; break;
         case 2: rect.x-= speed; break;
@@ -111,7 +112,7 @@ void Bullet::update(vector<Wall>& walls, PlayerTank& player, PlayerTank& otherPl
             return;
         }
     }
-
+    // Kiểm tra va chạm với xe tăng địch
     for(auto it= enemies.begin(); it!= enemies.end(); ++it) {
         SDL_Rect enemyRect= it->getRect();
         if(isFromPlayer&& SDL_HasIntersection(&rect, &enemyRect)) {
@@ -125,7 +126,7 @@ void Bullet::update(vector<Wall>& walls, PlayerTank& player, PlayerTank& otherPl
         return;
         }
     }
-
+    // Kiểm tra va chạm với boss
     for(auto it= bosses.begin(); it!= bosses.end(); ++it) {
         SDL_Rect bossRect= it->getRect();
         if(isFromPlayer&& SDL_HasIntersection(&rect, &bossRect)) {
@@ -139,7 +140,7 @@ void Bullet::update(vector<Wall>& walls, PlayerTank& player, PlayerTank& otherPl
         return;
         }
     }
-
+    // Kiểm tra va chạm giữa đạn của người chơi và đạn địch, đạn boss
     if(isFromPlayer) {
         for(auto& enemy : enemies) {
             vector<Bullet>& enemyBullets= enemy.getBullets();
@@ -172,5 +173,5 @@ void Bullet::update(vector<Wall>& walls, PlayerTank& player, PlayerTank& otherPl
 }
 
 bool Bullet::hasCollided() const {
-    return collided;
+    return collided;  // Trả về trạng thái va chạm của đạn
 }

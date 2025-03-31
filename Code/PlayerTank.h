@@ -23,7 +23,7 @@ public:
     const SDL_Rect getRect() const;
     void takeDamage();
     bool isDestroyed() const;
-
+    // Getter/Setter
     int getHealth() const { return health; }
     void setHealth(int health) { this->health = health; }
 

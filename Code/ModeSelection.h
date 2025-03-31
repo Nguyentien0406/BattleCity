@@ -6,7 +6,7 @@
 
 class ModeSelection{
 public:
-    enum Mode { ONE_PLAYER, TWO_PLAYERS, BACK };
+    enum Mode { ONE_PLAYER, TWO_PLAYERS, BACK };    // Các chế độ có thể chọn
     ModeSelection(SDL_Renderer* renderer);
     ~ModeSelection();
     Mode ShowSelection();
