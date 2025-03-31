@@ -1,15 +1,15 @@
 #include "EnemyTank.h"
 #include "Game.h"
 using namespace std;
-
-EnemyTank::EnemyTank(int x, int y) : speed(1), direction(rand() % 4), health(3), currentFrame(0),
- lastFrameTime(SDL_GetTicks()), isMoving(true), shootCooldown(80), changeDirectionCooldown(0) {
+ // Constructor
+EnemyTank::EnemyTank(int x, int y) : speed(1), direction(rand() % 4), health(3), currentFrame(0), lastFrameTime(SDL_GetTicks()),
+ isMoving(true), shootCooldown(1000), lastShotTime(SDL_GetTicks()), changeDirectionCooldown(0) {
     rect.x= x;
     rect.y= y;
     rect.w= TILE_SIZE;
     rect.h= TILE_SIZE;
 }
-
+ // Vẽ xe tăng
 void EnemyTank::render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) {
     SDL_Rect srcRect;
     Uint32 currentTime= SDL_GetTicks();
@@ -33,7 +33,7 @@ void EnemyTank::render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) {
     }
     SDL_RenderCopy(renderer, spriteSheet, &srcRect, &rect);
 }
-
+ // Di chuyển AI
 void EnemyTank::move(const vector<Wall>& walls, const PlayerTank& player, const PlayerTank& otherPlayer, const vector<EnemyTank>& enemies, const vector<class BossTank>& bosses) {
     if(changeDirectionCooldown<= 0) {
         int newDirection;
@@ -115,13 +115,13 @@ void EnemyTank::move(const vector<Wall>& walls, const PlayerTank& player, const 
     rect.x= newX;
     rect.y= newY;
 }
-
+ // Bắn đạn
 void EnemyTank::shoot() {
-    if(shootCooldown > 0) {
-        shootCooldown--;
+    Uint32 currentTime = SDL_GetTicks();
+    if (currentTime - lastShotTime < shootCooldown) {
         return;
     }
-
+    lastShotTime = currentTime;
     int bulletX= rect.x;
     int bulletY= rect.y;
     int offset= 10;
@@ -146,9 +146,8 @@ void EnemyTank::shoot() {
     }
 
     bullets.emplace_back(bulletX, bulletY, direction, false, false);
-    shootCooldown= 80+ (rand()% 80);
 }
-
+ // Cập nhật đạn
 void EnemyTank::updateBullets(vector<Wall>& walls, PlayerTank& player, PlayerTank& otherPlayer, vector<EnemyTank>& enemies, vector<BossTank>& bosses, Game &game) {
     for (Bullet& bullet : bullets) {
         bullet.update(walls, player, otherPlayer, enemies, bosses, game);
@@ -158,18 +157,19 @@ void EnemyTank::updateBullets(vector<Wall>& walls, PlayerTank& player, PlayerTan
         [](const Bullet& b) { return b.hasCollided(); }),
         bullets.end());
 }
-
+ // Lấy danh sách đạn
 vector<Bullet>& EnemyTank::getBullets() {
     return bullets;
 }
-
+ // Lấy hitbox
 const SDL_Rect EnemyTank::getRect() const {
     return rect;
 }
-
+ // Nhận sát thương
 void EnemyTank::takeDamage() {
     health--;
 }
+ // Kiểm tra bị phá hủy
 bool EnemyTank::isDestroyed() const {
     return health <= 0;
 }

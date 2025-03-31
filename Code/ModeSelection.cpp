@@ -4,7 +4,7 @@
 #include "Game.h"
 
 using namespace std;
-
+ // Khởi tạo với renderer
 ModeSelection::ModeSelection(SDL_Renderer* renderer) : renderer(renderer), titleTexture(nullptr), selectedOption(0) {
     font= TTF_OpenFont("Font/Font1.ttf", 30);
     if(!font) {
@@ -30,12 +30,12 @@ ModeSelection::ModeSelection(SDL_Renderer* renderer) : renderer(renderer), title
     SDL_FreeSurface(cropped);
     SDL_FreeSurface(surface);
 }
-
+ // Hủy để dọn dẹp tài nguyên
 ModeSelection::~ModeSelection() {
     if(font) TTF_CloseFont(font);
     if(titleTexture) SDL_DestroyTexture(titleTexture);
 }
-
+ // Hiển thị menu chọn chế độ
 ModeSelection::Mode ModeSelection::ShowSelection() {
     bool selectionRunning = true;
     Mode action = BACK;
@@ -49,7 +49,7 @@ ModeSelection::Mode ModeSelection::ShowSelection() {
     }
     return action;
 }
-
+ // Vẽ menu lên màn hình
 void ModeSelection::RenderSelection() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
@@ -79,7 +79,7 @@ void ModeSelection::RenderSelection() {
 
     SDL_RenderPresent(renderer);
 }
-
+ // Xử lý đầu vào
 void ModeSelection::HandleInput(bool& selectionRunning) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {

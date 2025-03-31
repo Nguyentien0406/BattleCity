@@ -2,19 +2,19 @@
 #include "Game.h"
 
 using namespace std;
-
+// Constructor: Khởi tạo đạn với các thông số cơ bản
 Bullet::Bullet(int x, int y, int dir, bool fromPlayer, bool fromBoss) : speed(BULLET_SPEED), direction(dir), collided(false), isFromPlayer(fromPlayer), isFromBoss(fromBoss) {
     rect.x= x;
     rect.y= y;
     if(!fromBoss) {
-        rect.w= BULLET_SIZE;
+        rect.w= BULLET_SIZE;// Kích thước đạn thường
         rect.h= BULLET_SIZE;
     } else {
-        rect.w= BULLET_SIZE* 1.5;
+        rect.w= BULLET_SIZE* 1.5;// Kích thước đạn boss (lớn hơn)
         rect.h= BULLET_SIZE* 1.5;
     }
 }
-
+// Vẽ đạn theo hướng di chuyển
 void Bullet::render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) const{
     SDL_Rect srcRect;
     switch(direction) {
@@ -33,15 +33,15 @@ void Bullet::render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) const{
     }
     SDL_RenderCopy(renderer, spriteSheet, &srcRect, &rect);
 }
-
+// Cập nhật trạng thái đạn và xử lý va chạm
 void Bullet::update(vector<Wall>& walls, PlayerTank& player, PlayerTank& otherPlayer, vector<EnemyTank>& enemies, vector<BossTank>& bosses, Game& game) {
-    switch(direction) {
+    switch(direction) {  // Di chuyển đạn theo hướng
         case 0: rect.y-= speed; break;
         case 1: rect.y+= speed; break;
         case 2: rect.x-= speed; break;
         case 3: rect.x+= speed; break;
     }
-
+    // Kiểm tra va chạm với tường
     for(Wall& wall : walls) {
         if(SDL_HasIntersection(&rect, &wall.getRect())) {
             if(wall.isBreakable()) {
@@ -63,6 +63,8 @@ void Bullet::update(vector<Wall>& walls, PlayerTank& player, PlayerTank& otherPl
             }
         }
     }
+
+    // Kiểm tra va chạm với người chơi 2
     if(player.isAlive()) {
         SDL_Rect playerRect= player.getRect();
         if(!isFromPlayer && SDL_HasIntersection(&rect, &playerRect)) {
@@ -85,6 +87,7 @@ void Bullet::update(vector<Wall>& walls, PlayerTank& player, PlayerTank& otherPl
         }
     }
 
+    // Kiểm tra va chạm với người chơi 1
     if(otherPlayer.isAlive()) {
         SDL_Rect otherPlayerRect= otherPlayer.getRect();
         if(!isFromPlayer && SDL_HasIntersection(&rect, &otherPlayerRect)) {
@@ -161,7 +164,7 @@ void Bullet::update(vector<Wall>& walls, PlayerTank& player, PlayerTank& otherPl
                 }
         }
     }
-
+    // Kiểm tra đạn ra khỏi biên màn hình
     if(rect.x<= TILE_SIZE|| rect.x+ BULLET_SIZE>= SCREEN_WIDTH- TILE_SIZE ||
         rect.y<= TILE_SIZE|| rect.y+ BULLET_SIZE>= SCREEN_HEIGHT- TILE_SIZE) {
         collided= true;

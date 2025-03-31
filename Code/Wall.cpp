@@ -1,13 +1,13 @@
 #include "Wall.h"
 #include "Game.h"
-
+ // Khởi tạo tường
 Wall::Wall(int x, int y, bool breakable, bool camouflaged) : breakable(breakable), camouflaged(camouflaged), hitPoints(2), damageDirection(-1), halfDamaged(false) {
     rect.x= x;
     rect.y= y;
     rect.w= TILE_SIZE;
     rect.h= TILE_SIZE;
 }
-
+ // Vẽ tường
 void Wall::render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) const {
     SDL_Rect srcRect;
     if(breakable) {
@@ -41,7 +41,7 @@ void Wall::render(SDL_Renderer* renderer, SDL_Texture* spriteSheet) const {
     }
     SDL_RenderCopy(renderer, spriteSheet, &srcRect, &rect);
 }
-
+ // Nhận sát thương từ 1 hướng
 void Wall::takeDamage(int direction) {
     if(breakable) {
         if(!halfDamaged) {
@@ -69,7 +69,7 @@ void Wall::takeDamage(int direction) {
         }
     }
 }
-
+ // Kiểm tra bị phá hủy
 bool Wall::isDestroyed() const {
     return breakable && hitPoints== 0;
 }

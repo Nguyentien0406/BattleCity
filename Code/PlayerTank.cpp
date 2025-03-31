@@ -3,7 +3,7 @@
 #include <iostream>
 
 using namespace std;
-
+// Khởi tạo
 PlayerTank::PlayerTank(int x, int y) : speed(1), baseSpeed(1), direction(0), health(3), currentFrame(0), lastFrameTime(SDL_GetTicks()),
  isMoving(false), boostedMoves(0), alive(true), shootCooldown(500), lastShotTime(SDL_GetTicks()) {
     rect.x= x;
@@ -11,7 +11,7 @@ PlayerTank::PlayerTank(int x, int y) : speed(1), baseSpeed(1), direction(0), hea
     rect.w= TILE_SIZE;
     rect.h= TILE_SIZE;
 }
-
+// Vẽ tank
 void PlayerTank::render(SDL_Renderer* renderer, SDL_Texture* spriteSheet, bool isOtherPlayer) {
     if (!alive) return;
     SDL_Rect srcRect;
@@ -53,7 +53,7 @@ void PlayerTank::render(SDL_Renderer* renderer, SDL_Texture* spriteSheet, bool i
     }
     SDL_RenderCopy(renderer, spriteSheet, &srcRect, &rect);
 }
-
+ // Di chuyển tank
 void PlayerTank::move(int dx, int dy, const vector<Wall>& walls, const vector<EnemyTank>& enemies, const vector<BossTank>& bosses, const PlayerTank& otherPlayer) {
     if (!alive) return;
     speed= (boostedMoves> 0) ? baseSpeed* 10 : baseSpeed;
@@ -103,7 +103,7 @@ void PlayerTank::move(int dx, int dy, const vector<Wall>& walls, const vector<En
     if(rect.y< TILE_SIZE) rect.y= TILE_SIZE;
     if(rect.y> SCREEN_HEIGHT- TILE_SIZE- TILE_SIZE) rect.y= SCREEN_HEIGHT- TILE_SIZE- TILE_SIZE;
 }
-
+ // Bắn đạn
 void PlayerTank::shoot(Game &game) {
     if (!alive) return;
     Uint32 currentTime = SDL_GetTicks();
@@ -137,7 +137,7 @@ void PlayerTank::shoot(Game &game) {
     bullets.emplace_back(bulletX, bulletY, direction, true, false);
     game.playShootSound();
 }
-
+// Getter/Setter
 vector<Bullet>& PlayerTank::getBullets() {
     return bullets;
 }
@@ -145,12 +145,12 @@ vector<Bullet>& PlayerTank::getBullets() {
 const SDL_Rect PlayerTank::getRect() const {
     return rect;
 }
-
+ // Nhận sát thương
 void PlayerTank::takeDamage() {
     if (!alive) return;
     health--;
 }
-
+ // Kiểm tra tank bị phá hủy
 bool PlayerTank::isDestroyed() const {
     return health <= 0;
 }

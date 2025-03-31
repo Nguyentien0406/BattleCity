@@ -2,7 +2,7 @@
 #include "Game.h"
 
 using namespace std;
-
+ // Hàm khởi tạo, nhận renderer từ SDL
 MainMenu::MainMenu(SDL_Renderer* renderer) : renderer(renderer), fontMenu(nullptr), selectedOption(0) {
     fontMenu = TTF_OpenFont("Font/Font1.ttf", 30);
     if (!fontMenu) {
@@ -27,12 +27,12 @@ MainMenu::MainMenu(SDL_Renderer* renderer) : renderer(renderer), fontMenu(nullpt
     SDL_FreeSurface(cropped);
     SDL_FreeSurface(surface);
 }
-
+ // Hàm hủy để dọn dẹp tài nguyên
 MainMenu::~MainMenu() {
     if (fontMenu) TTF_CloseFont(fontMenu);
     if (titleTexture) SDL_DestroyTexture(titleTexture);
 }
-
+ // Hiển thị menu và trả về lựa chọn của người chơi
 MainMenu::MenuAction MainMenu::ShowMenu(bool saveFile) {
     bool menuRunning = true;
     MenuAction action = EXIT_GAME;
@@ -46,7 +46,7 @@ MainMenu::MenuAction MainMenu::ShowMenu(bool saveFile) {
     }
     return action;
 }
-
+ // Vẽ menu lên màn hình
 void MainMenu::RenderMenu(bool saveFile) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
@@ -76,7 +76,7 @@ void MainMenu::RenderMenu(bool saveFile) {
     SDL_DestroyTexture(startTexture);
     SDL_RenderPresent(renderer);
 }
-
+ // Xử lý đầu vào từ người dùng
 void MainMenu::HandleInput(bool& menuRunning, bool saveFile) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {

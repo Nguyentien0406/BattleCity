@@ -7,7 +7,7 @@
 #include <SDL_ttf.h>
 
 using namespace std;
-
+ // Hàm kiểm tra file hợp lệ
 bool isFileValid(const string& filename) {
     FILE* file= fopen(filename.c_str(), "r");
     if (!file) return false;
@@ -16,17 +16,18 @@ bool isFileValid(const string& filename) {
     fclose(file);
     return size> 0;
 }
-
+  // Constructor
 Game::Game() : window(nullptr), renderer(nullptr), running(true), gameOver(false), gameWin(false),
  currentMap(1), backgroundMusic(nullptr), shootSound(nullptr), explosionSound(nullptr), player(400, 320), otherPlayer(360,320) {
     srand(time(nullptr));
     spriteSheet= nullptr;
     generateBorders();
 }
+ // Destructor
 Game::~Game() {
     close();
 }
-
+ // Khởi tạo game (SDL, cửa sổ, renderer, âm thanh)
 bool Game::init() {
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         cerr << "SDL could not initialize! SDL Error: " << SDL_GetError() << endl;
@@ -85,7 +86,7 @@ bool Game::init() {
 
     return true;
 }
-
+ // Xử lý khi game over
 void Game::setGameOver(PlayerTank& player, PlayerTank& otherPlayer) {
     if(!player.isAlive() && !otherPlayer.isAlive()) {
         gameOver= true;
@@ -93,13 +94,13 @@ void Game::setGameOver(PlayerTank& player, PlayerTank& otherPlayer) {
         file.close();
     }
 }
-
+ // Xử lý khi chiến thắng
 void Game::setGameWin() {
     gameWin= true;
     ofstream file("Save/Save1.txt", ios::trunc);
     file.close();
 }
-
+ // Hiển thị màn hình game over
 void Game::renderGameOverScreen() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
@@ -115,7 +116,7 @@ void Game::renderGameOverScreen() {
     SDL_DestroyTexture(gameOverTexture);
     SDL_RenderPresent(renderer);
 }
-
+ // Hiển thị màn hình chiến thắng
 void Game::renderWinScreen() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
@@ -131,7 +132,7 @@ void Game::renderWinScreen() {
     SDL_DestroyTexture(winTextTexture);
     SDL_RenderPresent(renderer);
 }
-
+ // Render toàn bộ game
 void Game::render() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
@@ -205,7 +206,7 @@ void Game::render() {
     }
     SDL_RenderPresent(renderer);
 }
-
+ // Vòng lặp game chính
 void Game::run() {
     while(true) {
         running= true;
@@ -292,7 +293,7 @@ void Game::run() {
         }
     }
 }
-
+ // Xử lý sự kiện bàn phím
 void Game::handleEvents(PlayerTank& player, PlayerTank& otherPlayer) {
     SDL_Event event;
     while(SDL_PollEvent(&event)) {
@@ -348,7 +349,7 @@ void Game::handleEvents(PlayerTank& player, PlayerTank& otherPlayer) {
         }
     }
 }
-
+ // Giải phóng tài nguyên
 void Game::close() {
     Mix_HaltMusic();
     Mix_FreeMusic(backgroundMusic);
@@ -359,21 +360,21 @@ void Game::close() {
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
-
+ // Phát âm thanh bắn đạn
 void Game::playShootSound() {
     if(shootSound) {
         Mix_VolumeChunk(shootSound, 32);
         Mix_PlayChannel(-1, shootSound, 0);
     }
 }
-
+ // Phát âm thanh nổ
 void Game::playExplosionSound() {
     if(explosionSound) {
         Mix_VolumeChunk(explosionSound, 32);
         Mix_PlayChannel(-1, explosionSound, 0);
     }
 }
-
+ // Thêm hiệu ứng nổ
 void Game::addExplosion(int x, int y, bool isBoss) {
     Explosion explosion;
     explosion.centerX= x;
@@ -389,7 +390,7 @@ void Game::addExplosion(int x, int y, bool isBoss) {
     }
     explosions.push_back(explosion);
 }
-
+ // Cập nhật hiệu ứng nổ
 void Game::updateExplosions() {
     Uint32 currentTime= SDL_GetTicks();
     for(auto it= explosions.begin(); it != explosions.end(); ) {
@@ -406,7 +407,7 @@ void Game::updateExplosions() {
         }
     }
 }
-
+ // Xóa tường
 void Game::removeWall(int x, int y) {
     walls.erase(remove_if(walls.begin(), walls.end(),
         [x, y](const Wall& w) {
@@ -414,7 +415,7 @@ void Game::removeWall(int x, int y) {
         }),
         walls.end());
 }
-
+ // Tải bản đồ tiếp theo
 void Game::loadNextMap() {
     map.clear();
     walls.clear();
@@ -442,7 +443,7 @@ void Game::loadNextMap() {
         generateBosses(2);
     }
 }
-
+ // Lưu game
 void Game::saveGame(const string& filename) {
     ofstream file(filename);
     if(!file) {
@@ -496,7 +497,7 @@ void Game::saveGame(const string& filename) {
     file << currentMap << endl;
     file.close();
 }
-
+ // Tải game
 void Game::loadGame(const string& filename) {
     ifstream file(filename);
     if(!file) {
@@ -595,7 +596,7 @@ void Game::loadGame(const string& filename) {
     file >> currentMap;
     file.close();
 }
-
+ // Tạo biên màn hình
 void Game::generateBorders() {
     borders.clear();
 
@@ -609,14 +610,14 @@ void Game::generateBorders() {
     borders.push_back(left_border);
     borders.push_back(right_border);
 }
-
+ // Vẽ biên
 void Game::renderBorders() {
     SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
     for(const auto& border : borders) {
         SDL_RenderFillRect(renderer, &border);
     }
 }
-
+ // Tải bản đồ từ file
 void Game::loadMapFromFile(const string& filename) {
     ifstream file(filename);
     if(!file) {
@@ -647,7 +648,7 @@ void Game::loadMapFromFile(const string& filename) {
     }
     file.close();
 }
-
+ // Cập nhật đạn
 void Game::updateBullets() {
     if(player.isAlive()) {
         vector<Bullet>& playerBullets = player.getBullets();
@@ -676,14 +677,14 @@ void Game::updateBullets() {
         boss.updateBullets(walls, player, otherPlayer, enemyTanks, bossTanks, *this);
     }
 }
-
+ // Cập nhật kẻ địch
 void Game::updateEnemies() {
     for(EnemyTank& enemy : enemyTanks) {
         enemy.move(walls, player, otherPlayer, enemyTanks, bossTanks);
         enemy.shoot();
     }
 }
-
+ // Sinh kẻ địch
 void Game::generateEnemies(int numEnemies) {
     for(int i= 0; i< numEnemies; i++) {
         bool validPosition= false;
@@ -734,14 +735,14 @@ void Game::generateEnemies(int numEnemies) {
         }
     }
 }
-
+ // Cập nhật boss
 void Game::updateBosses() {
     for(BossTank& boss : bossTanks) {
         boss.move(walls, player, otherPlayer, enemyTanks, bossTanks);
         boss.shoot();
     }
 }
-
+ // Sinh boss
 void Game::generateBosses(int numBosses) {
     for(int i= 0; i< numBosses; i++) {
         bool validPosition= false;

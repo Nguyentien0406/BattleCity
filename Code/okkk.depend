@@ -1,9 +1,9 @@
 # depslib dependency file v1.0
-1743337144 source:c:\sdl2\battlecity\code\bosstank.cpp
+1743346199 source:c:\sdl2\battlecity\code\bosstank.cpp
 	"BossTank.h"
 	"Game.h"
 
-1742993438 c:\sdl2\battlecity\code\bosstank.h
+1743345737 c:\sdl2\battlecity\code\bosstank.h
 	"Wall.h"
 	<SDL.h>
 	<SDL_mixer.h>
@@ -49,7 +49,7 @@
 	<SDL_mixer.h>
 	<vector>
 
-1742993309 c:\sdl2\battlecity\code\enemytank.h
+1743345737 c:\sdl2\battlecity\code\enemytank.h
 	"Wall.h"
 	<SDL.h>
 	<SDL_mixer.h>
@@ -59,7 +59,7 @@
 	"Bullet.h"
 	"Game.h"
 
-1743337144 source:c:\sdl2\battlecity\code\enemytank.cpp
+1743345791 source:c:\sdl2\battlecity\code\enemytank.cpp
 	"EnemyTank.h"
 	"Game.h"
 
